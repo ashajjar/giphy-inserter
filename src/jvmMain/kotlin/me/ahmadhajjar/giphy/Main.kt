@@ -8,16 +8,20 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 
+
 @Composable
 @Preview
 fun App() {
     var searchTerm by remember { mutableStateOf(TextFieldValue()) }
+    val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
     MaterialTheme {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
@@ -34,12 +38,17 @@ fun App() {
                     colors = TextFieldDefaults.textFieldColors(
                         textColor = Color.White
                     ),
+                    modifier = Modifier.focusRequester(focusRequester),
                 )
                 Button(onClick = ::handleSearchEvent) {
                     Text("Search")
                 }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 }
 
