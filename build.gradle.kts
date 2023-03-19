@@ -23,6 +23,8 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                // https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin
+                implementation("com.beust:klaxon:5.5")
             }
         }
         val jvmTest by getting
