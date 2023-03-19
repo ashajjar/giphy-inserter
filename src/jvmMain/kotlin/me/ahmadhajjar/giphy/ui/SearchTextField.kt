@@ -19,7 +19,12 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import me.ahmadhajjar.giphy.service.Giphy
 import me.ahmadhajjar.giphy.service.GiphyService
+import me.ahmadhajjar.giphy.utils.BasicTransferable
+import java.awt.Toolkit
+import java.awt.datatransfer.Clipboard
+import java.awt.datatransfer.StringSelection
 import kotlin.system.exitProcess
+
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -60,14 +65,35 @@ fun SearchTextField(
                 when (it.key) {
                     Key.Escape -> exitProcess(0)
                     Key.Enter -> {
-                        if (searchTerm.value.text.length < 3) {
+                        if (searchTerm.value.text.trim().length < 2) {
                             return@onPreviewKeyEvent false
                         }
                         giphy.value = giphyService.value.nextGiphy(searchTerm.value.text)
+                    }
+
+                    Key.DirectionDown -> {
+                        if (copyGifToClipboard(giphy.value)) {
+                            exitProcess(0)
+                        }
                     }
                 }
 
                 false
             },
     )
+}
+
+fun copyGifToClipboard(giphy: Giphy?): Boolean {
+    if (giphy?.id == null) {
+        return false
+    }
+
+    val mediaUrl = "https://i.giphy.com/media/${giphy.id}/giphy.gif"
+    val selection = BasicTransferable(mediaUrl, "<img src='$mediaUrl'/>")
+    val textSelection = StringSelection(mediaUrl)
+    val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+
+    clipboard.setContents(selection, textSelection)
+
+    return true
 }
