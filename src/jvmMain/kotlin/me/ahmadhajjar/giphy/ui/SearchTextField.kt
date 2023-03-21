@@ -32,12 +32,12 @@ import kotlin.system.exitProcess
 fun SearchTextField(
     searchTerm: MutableState<TextFieldValue>,
     giphyService: MutableState<GiphyService>,
-    giphy: MutableState<Giphy?>,
+    giphy: MutableState<Giphy>,
     focusRequester: FocusRequester
 ) {
-    var fieldWidth = giphy.value?.images?.original?.width?.toInt() ?: 0
-    if (fieldWidth < 500) {
-        fieldWidth = 500
+    var fieldWidth = giphy.value.originalWidth(500)
+    if (fieldWidth.value < 500) {
+        fieldWidth = 500.dp
     }
     TextField(
         singleLine = true,
@@ -53,7 +53,7 @@ fun SearchTextField(
         ),
         modifier = Modifier
             .size(
-                fieldWidth.dp,
+                fieldWidth,
                 60.dp
             )
             .focusRequester(focusRequester)
@@ -64,23 +64,37 @@ fun SearchTextField(
 
                 when (it.key) {
                     Key.Escape -> exitProcess(0)
-                    Key.Enter -> {
+                    Key.DirectionDown, Key.Enter -> {
+                        if (it.isCtrlPressed && copyGifToClipboard(giphy.value)) {
+                            exitProcess(0)
+                        }
+
                         if (searchTerm.value.text.trim().length < 2) {
                             return@onPreviewKeyEvent false
                         }
-                        giphy.value = giphyService.value.nextGiphy(searchTerm.value.text)
+                        giphy.value = giphyService.value.nextGiphy(searchTerm.value.text) ?: Giphy()
                     }
 
-                    Key.DirectionDown -> {
-                        if (copyGifToClipboard(giphy.value)) {
-                            exitProcess(0)
+                    Key.DirectionUp -> {
+                        if (it.isCtrlPressed && copyGifToClipboard(giphy.value)) {
+                            insertGiphy(giphy.value)
+                            return@onPreviewKeyEvent false
                         }
+
+                        if (searchTerm.value.text.trim().length < 2) {
+                            return@onPreviewKeyEvent false
+                        }
+                        giphy.value = giphyService.value.previousGiphy(searchTerm.value.text) ?: Giphy()
                     }
                 }
 
                 false
             },
     )
+}
+
+fun insertGiphy(giphy: Giphy?) {
+
 }
 
 fun copyGifToClipboard(giphy: Giphy?): Boolean {

@@ -10,21 +10,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.WindowState
 import me.ahmadhajjar.giphy.service.Giphy
 import me.ahmadhajjar.giphy.service.GiphyService
 import me.ahmadhajjar.giphy.ui.SearchTextField
+import me.ahmadhajjar.giphy.ui.originalHeight
+import me.ahmadhajjar.giphy.ui.originalWidth
 import java.net.URL
-import java.util.concurrent.CompletableFuture
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 
+class AppId
+
 @Composable
 @Preview
-fun App() {
+fun App(windowState: WindowState) {
     var searchTerm = mutableStateOf(TextFieldValue())
     val giphyService = mutableStateOf(GiphyService())
-    val giphy = mutableStateOf<Giphy?>(Giphy())
+    val giphy = mutableStateOf(Giphy())
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
     MaterialTheme {
@@ -35,22 +40,20 @@ fun App() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SwingPanel(
                     modifier = Modifier.size(
-                        (giphy.value?.images?.original?.width?.toInt() ?: 360).dp,
-                        (giphy.value?.images?.original?.height?.toInt() ?: 360).dp
+                        giphy.value.originalWidth(360),
+                        giphy.value.originalHeight(360)
                     ),
                     factory = {
-                        CompletableFuture.runAsync {
-                            giphy.value = giphyService.value.nextGiphy("Hello World!")
-                        }
-                        if (giphy.value?.url != null) {
-                            JLabel(ImageIcon(URL(giphy.value?.url)))
-                        } else {
-                            JLabel(ImageIcon(URL("https://i.giphy.com/media/E1w0yvMxBIv5M8WkL8/giphy.gif")))
-                        }
+                        JLabel(ImageIcon(AppId().javaClass.getResource("giphy.gif")))
                     },
                     update = {
-                        if (giphy.value?.url != null) {
-                            val mediaUrl = "https://i.giphy.com/media/${giphy.value?.id}/giphy.gif"
+                        windowState.size = DpSize(
+                            giphy.value.originalWidth(360),
+                            giphy.value.originalHeight(360)
+                        )
+                        windowState.position = WindowPosition(Alignment.Center)
+                        if (giphy.value.url != null) {
+                            val mediaUrl = "https://i.giphy.com/media/${giphy.value.id}/giphy.gif"
                             it.icon = ImageIcon(URL(mediaUrl))
                         }
                     }
