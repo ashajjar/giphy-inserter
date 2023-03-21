@@ -11,23 +11,49 @@ import java.nio.charset.Charset
 
 class GiphyService {
     private var nextPage: Int = 0
-    private lateinit var results: Iterator<Giphy>
+    private lateinit var results: List<Giphy>
     private var _searchTerm: String = ""
+    private var _currentItemOnPage: Int = 0
 
     fun nextGiphy(searchTerm: String): Giphy? {
-        if (searchTerm != _searchTerm || !results.hasNext()) {
-            getNextPage(searchTerm)
+        _currentItemOnPage++
+        if (searchTerm != _searchTerm || results.size <= _currentItemOnPage) {
+            nextPage++
+            fetchPage(searchTerm)
+            _currentItemOnPage = 0
         }
 
-        return if (results.hasNext()) {
-            results.next()
+        return if (results.size > _currentItemOnPage) {
+            results[_currentItemOnPage]
         } else {
             null
         }
     }
 
-    private fun getNextPage(searchTerm: String) {
-        nextPage++
+    fun previousGiphy(searchTerm: String): Giphy? {
+        _currentItemOnPage--
+        if (searchTerm != _searchTerm || _currentItemOnPage < 0) {
+            if (_currentItemOnPage < 0) {
+                _currentItemOnPage = 0
+            }
+
+            if (nextPage == 0) {
+                return results[_currentItemOnPage]
+            }
+
+            nextPage--
+            fetchPage(searchTerm)
+            _currentItemOnPage = results.size - 1
+        }
+
+        return if (results.isNotEmpty() && results.size >= _currentItemOnPage) {
+            results[_currentItemOnPage]
+        } else {
+            null
+        }
+    }
+
+    private fun fetchPage(searchTerm: String) {
         if (searchTerm != _searchTerm) {
             _searchTerm = searchTerm
             nextPage = 0
@@ -52,12 +78,11 @@ class GiphyService {
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         val giphyResponse = Klaxon().parse<GiphyResponse>(response.body())
-        val resultsList = giphyResponse?.data ?: mutableListOf()
-        results = resultsList.iterator()
+        results = giphyResponse?.data ?: mutableListOf()
     }
 
     companion object {
-        private const val PAGE_SIZE = 100
+        private const val PAGE_SIZE = 10
     }
 }
 
