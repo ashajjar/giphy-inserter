@@ -20,19 +20,15 @@ class GiphyService {
         }
 
         return if (results.hasNext()) {
-            println("here is a new URL")
             results.next()
         } else {
-            println("No more URLs found")
             null
         }
     }
 
     private fun getNextPage(searchTerm: String) {
-        println("Fetching next page ...")
         nextPage++
         if (searchTerm != _searchTerm) {
-            println("New search detected ...")
             _searchTerm = searchTerm
             nextPage = 0
         }
@@ -49,8 +45,6 @@ class GiphyService {
                     "rating=g&" +
                     "lang=en"
         )
-
-        println(uri)
 
         val client = HttpClient.newBuilder().build()
         val request = HttpRequest.newBuilder()
