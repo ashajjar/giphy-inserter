@@ -47,7 +47,6 @@ fun App() {
                         }
                     },
                     update = {
-                        println(giphy.value?.url)
                         if (giphy.value?.url != null) {
                             val mediaUrl = "https://i.giphy.com/media/${giphy.value?.id}/giphy.gif"
                             it.icon = ImageIcon(URL(mediaUrl))

@@ -137,7 +137,7 @@ class BasicTransferable(
                     DataFlavor.stringFlavor,
                 )
             } catch (cle: ClassNotFoundException) {
-                System.err.println("error initializing javax.swing.plaf.basic.BasicTranserable")
+                println("error initializing javax.swing.plaf.basic.BasicTranserable")
             }
         }
     }
