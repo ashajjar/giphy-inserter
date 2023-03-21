@@ -15,6 +15,7 @@ import me.ahmadhajjar.giphy.service.Giphy
 import me.ahmadhajjar.giphy.service.GiphyService
 import me.ahmadhajjar.giphy.ui.SearchTextField
 import java.net.URL
+import java.util.concurrent.CompletableFuture
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 
@@ -34,12 +35,13 @@ fun App() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SwingPanel(
                     modifier = Modifier.size(
-                        (giphy.value?.images?.original?.width?.toInt() ?: 500).dp,
-                        (giphy.value?.images?.original?.height?.toInt() ?: 500).dp
+                        (giphy.value?.images?.original?.width?.toInt() ?: 360).dp,
+                        (giphy.value?.images?.original?.height?.toInt() ?: 360).dp
                     ),
                     factory = {
-                        giphy.value = giphyService.value.nextGiphy("Hello World!")
-                        println(giphy.value?.url)
+                        CompletableFuture.runAsync {
+                            giphy.value = giphyService.value.nextGiphy("Hello World!")
+                        }
                         if (giphy.value?.url != null) {
                             JLabel(ImageIcon(URL(giphy.value?.url)))
                         } else {
