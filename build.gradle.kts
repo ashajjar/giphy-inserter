@@ -33,8 +33,9 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "me.ahmadhajjar.giphy.MainKt"
         nativeDistributions {
+            includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "GiphyInserter"
             packageVersion = "1.0.0"
