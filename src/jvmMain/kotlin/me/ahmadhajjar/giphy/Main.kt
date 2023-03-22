@@ -2,6 +2,7 @@ package me.ahmadhajjar.giphy
 
 import App
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -22,6 +23,7 @@ fun main() = application {
         undecorated = true,
 //        transparent = true, // todo make it configurable
         resizable = false,
+        icon = painterResource("icons/icon.png")
     ) {
         App(windowState)
     }
