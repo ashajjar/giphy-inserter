@@ -32,6 +32,8 @@ kotlin {
 }
 
 compose.desktop {
+    val resourcesRoot = project.file("src/jvmMain/resources")
+
     application {
         mainClass = "me.ahmadhajjar.giphy.MainKt"
         nativeDistributions {
@@ -39,6 +41,32 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "GiphyInserter"
             packageVersion = "1.0.0"
+            version = "0.1-SNAPSHOT"
+            description = "Helps you search and navigate giphy searches and copy giphies"
+            vendor = "Ahmad Hajjar"
+            licenseFile.set(resourcesRoot.resolve("LICENSE.txt"))
+            macOS {
+                // macOS specific options
+                iconFile.set(resourcesRoot.resolve("icons/icon-big.icns"))
+                bundleID = "me.ahmadhajjar.giphy"
+                packageName = "Giphy Inserter"
+                dockName = "Giphy Inserter"
+            }
+            windows {
+                // Windows specific options
+                iconFile.set(resourcesRoot.resolve("icons/icon-big.ico"))
+                perUserInstall = true
+                menuGroup = "Giphy Inserter"
+                upgradeUuid = "110c6d64-6fc0-4990-9171-730870738e19"
+            }
+            linux {
+                // Linux specific options
+                iconFile.set(resourcesRoot.resolve("icons/icon-big.png"))
+                packageName = "Giphy Inserter"
+                debMaintainer = "contact@ahmadhajjar.me"
+                menuGroup = "Giphy Inserter"
+                appRelease = "1"
+            }
         }
     }
 }
