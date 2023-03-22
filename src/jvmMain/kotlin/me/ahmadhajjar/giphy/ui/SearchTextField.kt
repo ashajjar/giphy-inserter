@@ -64,9 +64,15 @@ fun SearchTextField(
 
                 when (it.key) {
                     Key.Escape -> exitProcess(0)
+                    Key.C -> {
+                        if ((it.isCtrlPressed || it.isMetaPressed) && copyGifToClipboard(giphy.value)) {
+                            return@onPreviewKeyEvent false
+                        }
+                    }
+
                     Key.DirectionDown, Key.Enter -> {
                         if (it.isCtrlPressed && copyGifToClipboard(giphy.value)) {
-                            exitProcess(0)
+                            return@onPreviewKeyEvent false
                         }
 
                         if (searchTerm.value.text.trim().length < 2) {
