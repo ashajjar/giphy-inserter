@@ -15,6 +15,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import me.ahmadhajjar.giphy.service.Giphy
@@ -45,10 +47,14 @@ fun SearchTextField(
             searchTerm.value = it
         },
         placeholder = {
-            Text(text = "enter search term ...", color = Color.Gray)
+            Text(text = "Start searching ...", color = Color.Gray)
         },
         colors = TextFieldDefaults.textFieldColors(
-            textColor = Color.White
+            textColor = Color.hsl(275f, 0.44f, 0.47f),
+            backgroundColor = Color.hsl(240F, 0.13F, 0.13F)
+        ),
+        textStyle = TextStyle(
+            fontWeight = FontWeight.Bold,
         ),
         modifier = Modifier
             .size(
