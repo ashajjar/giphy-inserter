@@ -4,6 +4,7 @@ package me.ahmadhajjar.giphy.ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -15,6 +16,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -41,6 +43,13 @@ fun SearchTextField(
         fieldWidth = 500.dp
     }
     TextField(
+        trailingIcon = {
+            Icon(
+                painter = painterResource("powered-by-giphy.png"),
+                contentDescription = "Powered By Giphy",
+                tint = Color.Unspecified
+            )
+        },
         singleLine = true,
         value = searchTerm.value,
         onValueChange = {
