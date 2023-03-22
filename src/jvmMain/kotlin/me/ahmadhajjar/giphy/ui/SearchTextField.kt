@@ -25,7 +25,6 @@ import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import kotlin.system.exitProcess
 
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 @Preview
@@ -71,7 +70,7 @@ fun SearchTextField(
                     }
 
                     Key.DirectionDown, Key.Enter -> {
-                        if (it.isCtrlPressed && copyGifToClipboard(giphy.value)) {
+                        if ((it.isCtrlPressed || it.isMetaPressed) && copyGifToClipboard(giphy.value)) {
                             return@onPreviewKeyEvent false
                         }
 
@@ -82,7 +81,7 @@ fun SearchTextField(
                     }
 
                     Key.DirectionUp -> {
-                        if (it.isCtrlPressed && copyGifToClipboard(giphy.value)) {
+                        if ((it.isCtrlPressed || it.isMetaPressed) && copyGifToClipboard(giphy.value)) {
                             insertGiphy(giphy.value)
                             return@onPreviewKeyEvent false
                         }
