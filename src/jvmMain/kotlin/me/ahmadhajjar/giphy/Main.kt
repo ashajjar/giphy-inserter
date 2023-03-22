@@ -20,7 +20,7 @@ fun main() = application {
         title = "Giphy Inserter",
         state = windowState,
         undecorated = true,
-//        transparent = true,
+        transparent = true,
         resizable = false,
     ) {
         App(windowState)
