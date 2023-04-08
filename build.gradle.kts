@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "me.ahmadhajjar.giphy"
-version = "1.0-SNAPSHOT"
+version = "1.0.1"
 
 repositories {
     google()
@@ -40,11 +40,10 @@ compose.desktop {
             includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "GiphyInserter"
-            packageVersion = "1.0.0"
-            version = "0.1-SNAPSHOT"
+            packageVersion = "1.0.1"
+            version = "1.0.1"
             description = "Helps you search and navigate giphy searches and copy giphies"
             vendor = "Ahmad Hajjar"
-            licenseFile.set(resourcesRoot.resolve("LICENSE.txt"))
             macOS {
                 // macOS specific options
                 iconFile.set(resourcesRoot.resolve("icons/icon-big.icns"))
