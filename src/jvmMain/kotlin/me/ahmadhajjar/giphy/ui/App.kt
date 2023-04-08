@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import me.ahmadhajjar.giphy.service.Giphy
-import me.ahmadhajjar.giphy.service.GiphyService
 import me.ahmadhajjar.giphy.ui.SearchTextField
 import me.ahmadhajjar.giphy.ui.originalHeight
 import me.ahmadhajjar.giphy.ui.originalWidth
@@ -27,15 +26,14 @@ class AppId
 @Composable
 @Preview
 fun App(windowState: WindowState) {
-    var searchTerm = mutableStateOf(TextFieldValue())
-    val giphyService = mutableStateOf(GiphyService())
+    val searchTerm = mutableStateOf(TextFieldValue())
     val giphy = mutableStateOf(Giphy())
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
     MaterialTheme {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                SearchTextField(searchTerm, giphyService, giphy, focusRequester)
+                SearchTextField(searchTerm, giphy, focusRequester)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SwingPanel(
