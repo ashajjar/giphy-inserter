@@ -9,11 +9,15 @@ import java.net.http.HttpResponse
 import java.nio.charset.Charset
 
 
-class GiphyService {
+object GiphyService {
     private var nextPage: Int = 0
     private lateinit var results: List<Giphy>
     private var _searchTerm: String = ""
     private var _currentItemOnPage: Int = 0
+    private val client = HttpClient.newBuilder().build()
+
+    private const val PAGE_SIZE = 10
+    const val API_KEY = "nng5n18cImwDy26Yb2UW8sypJ9OYH8M8"
 
     fun nextGiphy(searchTerm: String): Giphy? {
         _currentItemOnPage++
@@ -59,30 +63,25 @@ class GiphyService {
             nextPage = 0
         }
 
-        val apiKey = "nng5n18cImwDy26Yb2UW8sypJ9OYH8M8"
         val urlEncodedSearchTerm = URLEncoder.encode(_searchTerm, Charset.defaultCharset())
 
         val uri = URI.create(
             "https://api.giphy.com/v1/gifs/search?" +
-                    "api_key=$apiKey&" +
+                    "api_key=$API_KEY&" +
                     "q=$urlEncodedSearchTerm&" +
                     "limit=$PAGE_SIZE&" +
                     "offset=${PAGE_SIZE * nextPage}&" +
+                    "random_id=${GiphyAnalytics.getUserId()}&" +
                     "rating=g&" +
                     "lang=en"
         )
 
-        val client = HttpClient.newBuilder().build()
         val request = HttpRequest.newBuilder()
             .uri(uri)
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         val giphyResponse = Klaxon().parse<GiphyResponse>(response.body())
         results = giphyResponse?.data ?: mutableListOf()
-    }
-
-    companion object {
-        private const val PAGE_SIZE = 10
     }
 }
 
@@ -95,6 +94,7 @@ data class Giphy(
     var id: String? = null,
     var url: String? = null,
     var images: GiphyImages? = null,
+    var analytics: GiphyAnalyticsObject? = null
 )
 
 data class GiphyImages(
@@ -109,4 +109,14 @@ data class GiphyImageDetails(
     var url: String? = null,
     var height: String? = null,
     var width: String? = null,
+)
+
+data class GiphyAnalyticsObject(
+    var onload: GiphyAnalyticsUrlObject? = null,
+    var onclick: GiphyAnalyticsUrlObject? = null,
+    var onsent: GiphyAnalyticsUrlObject? = null,
+)
+
+data class GiphyAnalyticsUrlObject(
+    var url: String? = null,
 )

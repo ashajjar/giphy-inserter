@@ -22,6 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import me.ahmadhajjar.giphy.service.Giphy
+import me.ahmadhajjar.giphy.service.GiphyAnalytics
+import me.ahmadhajjar.giphy.service.GiphyEvent
 import me.ahmadhajjar.giphy.service.GiphyService
 import me.ahmadhajjar.giphy.utils.BasicTransferable
 import java.awt.Toolkit
@@ -34,7 +36,6 @@ import kotlin.system.exitProcess
 @Preview
 fun SearchTextField(
     searchTerm: MutableState<TextFieldValue>,
-    giphyService: MutableState<GiphyService>,
     giphy: MutableState<Giphy>,
     focusRequester: FocusRequester
 ) {
@@ -92,7 +93,8 @@ fun SearchTextField(
                         if (searchTerm.value.text.trim().length < 2) {
                             return@onPreviewKeyEvent false
                         }
-                        giphy.value = giphyService.value.nextGiphy(searchTerm.value.text) ?: Giphy()
+                        giphy.value = GiphyService.nextGiphy(searchTerm.value.text) ?: Giphy()
+                        GiphyAnalytics.handleGiphyEvent(giphy.value, GiphyEvent.LOADED)
                     }
 
                     Key.DirectionUp -> {
@@ -104,7 +106,8 @@ fun SearchTextField(
                         if (searchTerm.value.text.trim().length < 2) {
                             return@onPreviewKeyEvent false
                         }
-                        giphy.value = giphyService.value.previousGiphy(searchTerm.value.text) ?: Giphy()
+                        giphy.value = GiphyService.previousGiphy(searchTerm.value.text) ?: Giphy()
+                        GiphyAnalytics.handleGiphyEvent(giphy.value, GiphyEvent.LOADED)
                     }
                 }
 
@@ -128,6 +131,6 @@ fun copyGifToClipboard(giphy: Giphy?): Boolean {
     val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
 
     clipboard.setContents(selection, textSelection)
-
+    GiphyAnalytics.handleGiphyEvent(giphy, GiphyEvent.SENT)
     return true
 }
