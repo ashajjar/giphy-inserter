@@ -7,6 +7,7 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.charset.Charset
+import java.util.*
 
 
 object GiphyService {
@@ -17,7 +18,7 @@ object GiphyService {
     private val client = HttpClient.newBuilder().build()
 
     private const val PAGE_SIZE = 10
-    const val API_KEY = "your api key here"
+    private var apiKey: String? = null
 
     fun nextGiphy(searchTerm: String): Giphy? {
         _currentItemOnPage++
@@ -67,7 +68,7 @@ object GiphyService {
 
         val uri = URI.create(
             "https://api.giphy.com/v1/gifs/search?" +
-                    "api_key=$API_KEY&" +
+                    "api_key=${getApiKey()}&" +
                     "q=$urlEncodedSearchTerm&" +
                     "limit=$PAGE_SIZE&" +
                     "offset=${PAGE_SIZE * nextPage}&" +
@@ -82,6 +83,21 @@ object GiphyService {
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         val giphyResponse = Klaxon().parse<GiphyResponse>(response.body())
         results = giphyResponse?.data ?: mutableListOf()
+    }
+
+    fun getApiKey(): String {
+        if (apiKey != null) {
+            return apiKey as String
+        }
+        val env = System.getenv("GIPHY_API_KEY")
+        if (env != null) {
+            apiKey = env
+            return apiKey as String
+        }
+        val properties = Properties()
+        properties.load(GiphyService.javaClass.getResourceAsStream("/api.properties"))
+        apiKey = properties.getProperty("giphy.apiKey")
+        return apiKey as String
     }
 }
 

@@ -40,9 +40,9 @@ compose.desktop {
             includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "GiphyInserter"
-            packageVersion = "1.0.1"
-            version = "1.0.1"
-            description = "Helps you search and navigate giphy and copy giphies"
+            packageVersion = "1.0.2"
+            version = "1.0.2"
+            description = "Helps you search, navigate and copy giphies"
             vendor = "Ahmad Hajjar"
             macOS {
                 // macOS specific options
