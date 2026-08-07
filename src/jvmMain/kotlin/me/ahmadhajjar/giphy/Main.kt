@@ -1,14 +1,15 @@
 package me.ahmadhajjar.giphy
 
 import App
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.window.*
 
 fun main() = application {
     val windowState = rememberWindowState(
@@ -16,15 +17,30 @@ fun main() = application {
         size = DpSize(360.dp, 415.dp)
     )
 
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = "Giphy Inserter",
-        state = windowState,
-        undecorated = true,
-//        transparent = true, // todo make it configurable
-        resizable = false,
-        icon = painterResource("icons/icon.png")
-    ) {
-        App(windowState)
+    var isVisible by remember { mutableStateOf(true) }
+
+    if (isVisible) {
+        Window(
+            onCloseRequest = { isVisible = false },
+            title = "Giphy Inserter",
+            state = windowState,
+            undecorated = true,
+            transparent = true,
+            resizable = false,
+            alwaysOnTop = true,
+            icon = painterResource("icons/icon.png")
+        ) {
+            App(windowState) { isVisible = false }
+        }
     }
+
+    Tray(
+        icon = painterResource("icons/icon.png"),
+        tooltip = "Giphy Inserter",
+        menu = {
+            Item("Show/Hide", onClick = { isVisible = !isVisible })
+            Separator()
+            Item("Exit", onClick = ::exitApplication)
+        }
+    )
 }

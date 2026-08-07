@@ -85,14 +85,19 @@ fun SearchTextField(
                         }
                     }
 
+                    Key.R -> {
+                        if (it.isCtrlPressed || it.isMetaPressed) {
+                            giphy.value = GiphyService.randomGiphy() ?: Giphy()
+                            GiphyAnalytics.handleGiphyEvent(giphy.value, GiphyEvent.LOADED)
+                            return@onPreviewKeyEvent false
+                        }
+                    }
+
                     Key.DirectionDown, Key.Enter -> {
                         if ((it.isCtrlPressed || it.isMetaPressed) && copyGifToClipboard(giphy.value)) {
                             return@onPreviewKeyEvent false
                         }
 
-                        if (searchTerm.value.text.trim().length < 2) {
-                            return@onPreviewKeyEvent false
-                        }
                         giphy.value = GiphyService.nextGiphy(searchTerm.value.text) ?: Giphy()
                         GiphyAnalytics.handleGiphyEvent(giphy.value, GiphyEvent.LOADED)
                     }
@@ -103,9 +108,6 @@ fun SearchTextField(
                             return@onPreviewKeyEvent false
                         }
 
-                        if (searchTerm.value.text.trim().length < 2) {
-                            return@onPreviewKeyEvent false
-                        }
                         giphy.value = GiphyService.previousGiphy(searchTerm.value.text) ?: Giphy()
                         GiphyAnalytics.handleGiphyEvent(giphy.value, GiphyEvent.LOADED)
                     }
