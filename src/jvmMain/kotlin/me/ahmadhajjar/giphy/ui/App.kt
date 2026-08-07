@@ -1,3 +1,5 @@
+package me.ahmadhajjar.giphy.ui
+
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -10,135 +12,165 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowScope
-import androidx.compose.ui.window.WindowState
 import me.ahmadhajjar.giphy.service.Giphy
 import me.ahmadhajjar.giphy.ui.SearchTextField
-import me.ahmadhajjar.giphy.ui.originalHeight
-import me.ahmadhajjar.giphy.ui.originalWidth
 import java.net.URL
-import javax.swing.ImageIcon
-import javax.swing.JLabel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.system.exitProcess
-
-class AppId
 
 @Composable
 @Preview
-fun WindowScope.App(windowState: WindowState, onExit: () -> Unit) {
+fun WindowScope.App(onExit: () -> Unit) {
     val searchTerm = remember { mutableStateOf(TextFieldValue()) }
     val giphy = remember { mutableStateOf(Giphy()) }
     val isLoading = remember { mutableStateOf(false) }
-    val iconState = remember { mutableStateOf<ImageIcon?>(null) }
+    val animatedGif = remember { mutableStateOf<me.ahmadhajjar.giphy.ui.AnimatedGif?>(null) }
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
+    val showCopied = remember { mutableStateOf(false) }
 
     LaunchedEffect(giphy.value) {
         if (giphy.value.id != null) {
             isLoading.value = true
 
-            if (giphy.value.icon != null) {
-                iconState.value = giphy.value.icon
-                isLoading.value = false
-                return@LaunchedEffect
-            }
-
             val mediaUrl = "https://i.giphy.com/media/${giphy.value.id}/giphy.gif"
-            val icon = withContext(Dispatchers.IO) {
+            withContext(Dispatchers.IO) {
                 try {
-                    ImageIcon(URL(mediaUrl))
+                    animatedGif.value = me.ahmadhajjar.giphy.ui.AnimatedGif.fromURL(URL(mediaUrl))
                 } catch (e: Exception) {
-                    null
+                    e.printStackTrace()
                 }
             }
-            giphy.value.icon = icon
-            iconState.value = icon
             isLoading.value = false
+        }
+    }
+
+    LaunchedEffect(showCopied.value) {
+        if (showCopied.value) {
+            kotlinx.coroutines.delay(2000)
+            showCopied.value = false
         }
     }
 
     MaterialTheme(
         colors = darkColors(
             primary = Color(0xFFBB86FC),
+            secondary = Color(0xFF03DAC6),
             background = Color.Transparent,
             surface = Color(0xFF121212)
         )
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF1E1E1E).copy(alpha = 0.95f),
-            elevation = 10.dp,
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+            shape = RoundedCornerShape(24.dp),
+            color = Color(0xFF1E1E1E).copy(alpha = 0.85f),
+            elevation = 12.dp,
+            border = BorderStroke(1.5.dp, Color.White.copy(alpha = 0.15f))
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 WindowDraggableArea {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(40.dp)
-                            .background(Color.White.copy(alpha = 0.05f)),
+                            .height(48.dp)
+                            .background(Color.White.copy(alpha = 0.03f)),
                         contentAlignment = Alignment.CenterEnd
                     ) {
                         Text(
-                            "Giphy Inserter",
-                            style = MaterialTheme.typography.caption,
-                            color = Color.Gray,
-                            modifier = Modifier.align(Alignment.CenterStart).padding(start = 16.dp)
+                            "✨ Giphy Inserter",
+                            style = MaterialTheme.typography.subtitle2,
+                            color = Color.White.copy(alpha = 0.6f),
+                            modifier = Modifier.align(Alignment.CenterStart).padding(start = 20.dp)
                         )
-                        IconButton(onClick = onExit) {
+                        IconButton(onClick = onExit, modifier = Modifier.padding(end = 8.dp)) {
                             Icon(
                                 Icons.Default.Close,
                                 contentDescription = "Close",
-                                tint = Color.Gray,
+                                tint = Color.White.copy(alpha = 0.4f),
                                 modifier = Modifier.size(20.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SearchTextField(searchTerm, giphy, isLoading, focusRequester)
+                    SearchTextField(searchTerm, giphy, isLoading, focusRequester, showCopied)
                 }
 
-                if (isLoading.value) {
-                    LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth().height(2.dp),
-                        color = MaterialTheme.colors.primary
-                    )
-                } else {
-                    Spacer(modifier = Modifier.height(2.dp))
+                Box(modifier = Modifier.fillMaxWidth().height(4.dp)) {
+                    if (isLoading.value) {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colors.primary,
+                            backgroundColor = Color.Transparent
+                        )
+                    }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    SwingPanel(
-                        modifier = Modifier.size(
-                            giphy.value.originalWidth(360),
-                            giphy.value.originalHeight(360)
-                        ),
-                        factory = {
-                            JLabel(ImageIcon(AppId().javaClass.getResource("giphy.gif")))
-                        },
-                        update = {
-                            windowState.size = DpSize(
-                                giphy.value.originalWidth(360),
-                                giphy.value.originalHeight(360) + 42.dp // Add title bar height + loading bar
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFFBB86FC).copy(alpha = 0.1f),
+                                    Color.Transparent
+                                )
                             )
-                            it.icon = iconState.value ?: ImageIcon(AppId().javaClass.getResource("giphy.gif"))
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = 8.dp,
+                        backgroundColor = Color.Black,
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            val gif = animatedGif.value
+                            if (gif != null) {
+                                AnimatedGif(gif, Modifier.fillMaxSize())
+                            } else {
+                                CircularProgressIndicator(color = MaterialTheme.colors.primary.copy(alpha = 0.5f))
+                            }
                         }
-                    )
+                    }
 
+                    if (showCopied.value) {
+                        Surface(
+                            color = MaterialTheme.colors.secondary.copy(alpha = 0.9f),
+                            shape = RoundedCornerShape(50),
+                            modifier = Modifier.padding(bottom = 20.dp)
+                        ) {
+                            Text(
+                                "Copied to Clipboard!",
+                                color = Color.Black,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.body2,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    "⏎ Next  •  ⌘C Copy  •  ⌘R Random",
+                    style = MaterialTheme.typography.overline,
+                    color = Color.White.copy(alpha = 0.3f),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
             }
         }
     }

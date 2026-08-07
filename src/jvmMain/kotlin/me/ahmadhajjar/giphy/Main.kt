@@ -1,6 +1,6 @@
 package me.ahmadhajjar.giphy
 
-import App
+import me.ahmadhajjar.giphy.ui.App
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,7 +14,7 @@ import androidx.compose.ui.window.*
 fun main() = application {
     val windowState = rememberWindowState(
         position = WindowPosition(Alignment.Center),
-        size = DpSize(360.dp, 415.dp)
+        size = DpSize(400.dp, 550.dp)
     )
 
     var isVisible by remember { mutableStateOf(true) }
@@ -30,7 +30,7 @@ fun main() = application {
             alwaysOnTop = true,
             icon = painterResource("icons/icon.png")
         ) {
-            App(windowState) { isVisible = false }
+            App { isVisible = false }
         }
     }
 
