@@ -26,6 +26,8 @@ import me.ahmadhajjar.giphy.ui.originalWidth
 import java.net.URL
 import javax.swing.ImageIcon
 import javax.swing.JLabel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.system.exitProcess
 
 class AppId
@@ -33,9 +35,35 @@ class AppId
 @Composable
 @Preview
 fun WindowScope.App(windowState: WindowState, onExit: () -> Unit) {
-    val searchTerm = mutableStateOf(TextFieldValue())
-    val giphy = mutableStateOf(Giphy())
+    val searchTerm = remember { mutableStateOf(TextFieldValue()) }
+    val giphy = remember { mutableStateOf(Giphy()) }
+    val isLoading = remember { mutableStateOf(false) }
+    val iconState = remember { mutableStateOf<ImageIcon?>(null) }
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
+
+    LaunchedEffect(giphy.value) {
+        if (giphy.value.id != null) {
+            isLoading.value = true
+
+            if (giphy.value.icon != null) {
+                iconState.value = giphy.value.icon
+                isLoading.value = false
+                return@LaunchedEffect
+            }
+
+            val mediaUrl = "https://i.giphy.com/media/${giphy.value.id}/giphy.gif"
+            val icon = withContext(Dispatchers.IO) {
+                try {
+                    ImageIcon(URL(mediaUrl))
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            giphy.value.icon = icon
+            iconState.value = icon
+            isLoading.value = false
+        }
+    }
 
     MaterialTheme(
         colors = darkColors(
@@ -80,8 +108,18 @@ fun WindowScope.App(windowState: WindowState, onExit: () -> Unit) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SearchTextField(searchTerm, giphy, focusRequester)
+                    SearchTextField(searchTerm, giphy, isLoading, focusRequester)
                 }
+
+                if (isLoading.value) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth().height(2.dp),
+                        color = MaterialTheme.colors.primary
+                    )
+                } else {
+                    Spacer(modifier = Modifier.height(2.dp))
+                }
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SwingPanel(
                         modifier = Modifier.size(
@@ -94,13 +132,9 @@ fun WindowScope.App(windowState: WindowState, onExit: () -> Unit) {
                         update = {
                             windowState.size = DpSize(
                                 giphy.value.originalWidth(360),
-                                giphy.value.originalHeight(360) + 40.dp // Add title bar height
+                                giphy.value.originalHeight(360) + 42.dp // Add title bar height + loading bar
                             )
-                            // Keep it somewhat centered or just let the user move it
-                            if (giphy.value.url != null) {
-                                val mediaUrl = "https://i.giphy.com/media/${giphy.value.id}/giphy.gif"
-                                it.icon = ImageIcon(URL(mediaUrl))
-                            }
+                            it.icon = iconState.value ?: ImageIcon(AppId().javaClass.getResource("giphy.gif"))
                         }
                     )
 
