@@ -30,6 +30,7 @@ fun main() = application {
             alwaysOnTop = true,
             icon = painterResource("icons/icon.png")
         ) {
+            window.background = java.awt.Color(0, 0, 0, 0)
             App { isVisible = false }
         }
     }

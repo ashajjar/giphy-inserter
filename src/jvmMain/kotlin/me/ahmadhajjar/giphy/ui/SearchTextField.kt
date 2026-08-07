@@ -28,14 +28,11 @@ import androidx.compose.ui.unit.sp
 import me.ahmadhajjar.giphy.service.*
 import me.ahmadhajjar.giphy.utils.BasicTransferable
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.awt.Toolkit
 import java.awt.datatransfer.*
 import java.net.URL
 import kotlin.system.exitProcess
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -48,20 +45,6 @@ fun SearchTextField(
     showCopied: MutableState<Boolean>
 ) {
     val scope = rememberCoroutineScope()
-
-    LaunchedEffect(searchTerm.value.text) {
-        if (searchTerm.value.text.isEmpty()) return@LaunchedEffect
-        delay(500.milliseconds) // Debounce
-        if (!isLoading.value) {
-            isLoading.value = true
-            val newGiphy = withContext(Dispatchers.IO) {
-                GiphyService.nextGiphy(searchTerm.value.text) ?: Giphy()
-            }
-            giphy.value = newGiphy
-            GiphyAnalytics.handleGiphyEvent(newGiphy, GiphyEvent.LOADED)
-            isLoading.value = false
-        }
-    }
 
     TextField(
         trailingIcon = {
@@ -130,7 +113,7 @@ fun SearchTextField(
                         }
                     }
 
-                    Key.DirectionDown, Key.Enter -> {
+                    Key.Enter -> {
                         if (it.isCtrlPressed || it.isMetaPressed) {
                             scope.launch(Dispatchers.IO) {
                                 if (copyGifToClipboard(giphy.value)) {
@@ -162,17 +145,6 @@ fun SearchTextField(
                             }
                             return@onPreviewKeyEvent true
                         }
-
-                        if (!isLoading.value) {
-                            scope.launch(Dispatchers.IO) {
-                                isLoading.value = true
-                                val newGiphy = GiphyService.previousGiphy(searchTerm.value.text) ?: Giphy()
-                                giphy.value = newGiphy
-                                GiphyAnalytics.handleGiphyEvent(newGiphy, GiphyEvent.LOADED)
-                                isLoading.value = false
-                            }
-                        }
-                        return@onPreviewKeyEvent true
                     }
                 }
 

@@ -16,6 +16,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import me.ahmadhajjar.giphy.service.Giphy
@@ -27,7 +28,10 @@ import kotlinx.coroutines.withContext
 @Composable
 @Preview
 fun WindowScope.App(onExit: () -> Unit) {
-    val searchTerm = remember { mutableStateOf(TextFieldValue()) }
+    val searchTerm = remember {
+        val initial = listOf("Hello", "Hi", "Hey", "Welcome", "Greetings").random()
+        mutableStateOf(TextFieldValue(initial, selection = TextRange(0, initial.length)))
+    }
     val giphy = remember { mutableStateOf(Giphy()) }
     val isLoading = remember { mutableStateOf(false) }
     val animatedGif = remember { mutableStateOf<me.ahmadhajjar.giphy.ui.AnimatedGif?>(null) }
@@ -65,13 +69,20 @@ fun WindowScope.App(onExit: () -> Unit) {
             surface = Color(0xFF121212)
         )
     ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            shape = RoundedCornerShape(24.dp),
-            color = Color(0xFF1E1E1E).copy(alpha = 0.85f),
-            elevation = 12.dp,
-            border = BorderStroke(1.5.dp, Color.White.copy(alpha = 0.15f))
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Transparent)
+                .padding(8.dp),
+            contentAlignment = Alignment.Center
         ) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                shape = RoundedCornerShape(24.dp),
+                color = Color(0xFF1E1E1E).copy(alpha = 0.85f),
+                elevation = 12.dp,
+                border = BorderStroke(1.5.dp, Color.White.copy(alpha = 0.15f))
+            ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 WindowDraggableArea {
                     Box(
@@ -174,8 +185,18 @@ fun WindowScope.App(onExit: () -> Unit) {
             }
         }
     }
+}
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+        withContext(Dispatchers.IO) {
+            try {
+                if (animatedGif.value == null) {
+                    animatedGif.value = me.ahmadhajjar.giphy.ui.AnimatedGif.fromResource("giphy.gif")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }
