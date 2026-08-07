@@ -10,6 +10,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -26,6 +27,8 @@ import me.ahmadhajjar.giphy.service.GiphyAnalytics
 import me.ahmadhajjar.giphy.service.GiphyEvent
 import me.ahmadhajjar.giphy.service.GiphyService
 import me.ahmadhajjar.giphy.utils.BasicTransferable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
@@ -37,8 +40,10 @@ import kotlin.system.exitProcess
 fun SearchTextField(
     searchTerm: MutableState<TextFieldValue>,
     giphy: MutableState<Giphy>,
+    isLoading: MutableState<Boolean>,
     focusRequester: FocusRequester
 ) {
+    val scope = rememberCoroutineScope()
     var fieldWidth = giphy.value.originalWidth(500)
     if (fieldWidth.value < 500) {
         fieldWidth = 500.dp
@@ -87,29 +92,52 @@ fun SearchTextField(
 
                     Key.R -> {
                         if (it.isCtrlPressed || it.isMetaPressed) {
-                            giphy.value = GiphyService.randomGiphy() ?: Giphy()
-                            GiphyAnalytics.handleGiphyEvent(giphy.value, GiphyEvent.LOADED)
-                            return@onPreviewKeyEvent false
+                            if (!isLoading.value) {
+                                scope.launch(Dispatchers.IO) {
+                                    isLoading.value = true
+                                    val newGiphy = GiphyService.randomGiphy() ?: Giphy()
+                                    giphy.value = newGiphy
+                                    GiphyAnalytics.handleGiphyEvent(newGiphy, GiphyEvent.LOADED)
+                                    isLoading.value = false
+                                }
+                            }
+                            return@onPreviewKeyEvent true
                         }
                     }
 
                     Key.DirectionDown, Key.Enter -> {
                         if ((it.isCtrlPressed || it.isMetaPressed) && copyGifToClipboard(giphy.value)) {
-                            return@onPreviewKeyEvent false
+                            return@onPreviewKeyEvent true
                         }
 
-                        giphy.value = GiphyService.nextGiphy(searchTerm.value.text) ?: Giphy()
-                        GiphyAnalytics.handleGiphyEvent(giphy.value, GiphyEvent.LOADED)
+                        if (!isLoading.value) {
+                            scope.launch(Dispatchers.IO) {
+                                isLoading.value = true
+                                val newGiphy = GiphyService.nextGiphy(searchTerm.value.text) ?: Giphy()
+                                giphy.value = newGiphy
+                                GiphyAnalytics.handleGiphyEvent(newGiphy, GiphyEvent.LOADED)
+                                isLoading.value = false
+                            }
+                        }
+                        return@onPreviewKeyEvent true
                     }
 
                     Key.DirectionUp -> {
                         if ((it.isCtrlPressed || it.isMetaPressed) && copyGifToClipboard(giphy.value)) {
                             insertGiphy(giphy.value)
-                            return@onPreviewKeyEvent false
+                            return@onPreviewKeyEvent true
                         }
 
-                        giphy.value = GiphyService.previousGiphy(searchTerm.value.text) ?: Giphy()
-                        GiphyAnalytics.handleGiphyEvent(giphy.value, GiphyEvent.LOADED)
+                        if (!isLoading.value) {
+                            scope.launch(Dispatchers.IO) {
+                                isLoading.value = true
+                                val newGiphy = GiphyService.previousGiphy(searchTerm.value.text) ?: Giphy()
+                                giphy.value = newGiphy
+                                GiphyAnalytics.handleGiphyEvent(newGiphy, GiphyEvent.LOADED)
+                                isLoading.value = false
+                            }
+                        }
+                        return@onPreviewKeyEvent true
                     }
                 }
 
