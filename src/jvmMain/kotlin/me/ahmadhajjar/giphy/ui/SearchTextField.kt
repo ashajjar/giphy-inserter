@@ -3,12 +3,14 @@
 package me.ahmadhajjar.giphy.ui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -22,17 +24,18 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import me.ahmadhajjar.giphy.service.Giphy
-import me.ahmadhajjar.giphy.service.GiphyAnalytics
-import me.ahmadhajjar.giphy.service.GiphyEvent
-import me.ahmadhajjar.giphy.service.GiphyService
+import androidx.compose.ui.unit.sp
+import me.ahmadhajjar.giphy.service.*
 import me.ahmadhajjar.giphy.utils.BasicTransferable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.awt.Toolkit
-import java.awt.datatransfer.Clipboard
-import java.awt.datatransfer.StringSelection
+import java.awt.datatransfer.*
+import java.net.URL
 import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -41,19 +44,32 @@ fun SearchTextField(
     searchTerm: MutableState<TextFieldValue>,
     giphy: MutableState<Giphy>,
     isLoading: MutableState<Boolean>,
-    focusRequester: FocusRequester
+    focusRequester: FocusRequester,
+    showCopied: MutableState<Boolean>
 ) {
     val scope = rememberCoroutineScope()
-    var fieldWidth = giphy.value.originalWidth(500)
-    if (fieldWidth.value < 500) {
-        fieldWidth = 500.dp
+
+    LaunchedEffect(searchTerm.value.text) {
+        if (searchTerm.value.text.isEmpty()) return@LaunchedEffect
+        delay(500.milliseconds) // Debounce
+        if (!isLoading.value) {
+            isLoading.value = true
+            val newGiphy = withContext(Dispatchers.IO) {
+                GiphyService.nextGiphy(searchTerm.value.text) ?: Giphy()
+            }
+            giphy.value = newGiphy
+            GiphyAnalytics.handleGiphyEvent(newGiphy, GiphyEvent.LOADED)
+            isLoading.value = false
+        }
     }
+
     TextField(
         trailingIcon = {
             Icon(
                 painter = painterResource("powered-by-giphy.png"),
                 contentDescription = "Powered By Giphy",
-                tint = Color.Unspecified
+                tint = Color.Unspecified,
+                modifier = Modifier.size(80.dp)
             )
         },
         singleLine = true,
@@ -62,20 +78,24 @@ fun SearchTextField(
             searchTerm.value = it
         },
         placeholder = {
-            Text(text = "Start searching ...", color = Color.Gray)
+            Text(text = "Search for awesome GIFs...", color = Color.Gray.copy(alpha = 0.5f))
         },
         colors = TextFieldDefaults.textFieldColors(
-            textColor = Color.hsl(275f, 0.44f, 0.47f),
-            backgroundColor = Color.hsl(240F, 0.13F, 0.13F)
+            textColor = Color.White,
+            backgroundColor = Color.White.copy(alpha = 0.05f),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            cursorColor = Color(0xFFBB86FC)
         ),
+        shape = RoundedCornerShape(12.dp),
         textStyle = TextStyle(
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp
         ),
         modifier = Modifier
-            .size(
-                fieldWidth,
-                60.dp
-            )
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .height(56.dp)
             .focusRequester(focusRequester)
             .onPreviewKeyEvent {
                 if (it.type != KeyEventType.KeyDown) {
@@ -85,8 +105,13 @@ fun SearchTextField(
                 when (it.key) {
                     Key.Escape -> exitProcess(0)
                     Key.C -> {
-                        if ((it.isCtrlPressed || it.isMetaPressed) && copyGifToClipboard(giphy.value)) {
-                            return@onPreviewKeyEvent false
+                        if (it.isCtrlPressed || it.isMetaPressed) {
+                            scope.launch(Dispatchers.IO) {
+                                if (copyGifToClipboard(giphy.value)) {
+                                    showCopied.value = true
+                                }
+                            }
+                            return@onPreviewKeyEvent true
                         }
                     }
 
@@ -106,7 +131,12 @@ fun SearchTextField(
                     }
 
                     Key.DirectionDown, Key.Enter -> {
-                        if ((it.isCtrlPressed || it.isMetaPressed) && copyGifToClipboard(giphy.value)) {
+                        if (it.isCtrlPressed || it.isMetaPressed) {
+                            scope.launch(Dispatchers.IO) {
+                                if (copyGifToClipboard(giphy.value)) {
+                                    showCopied.value = true
+                                }
+                            }
                             return@onPreviewKeyEvent true
                         }
 
@@ -123,8 +153,13 @@ fun SearchTextField(
                     }
 
                     Key.DirectionUp -> {
-                        if ((it.isCtrlPressed || it.isMetaPressed) && copyGifToClipboard(giphy.value)) {
-                            insertGiphy(giphy.value)
+                        if (it.isCtrlPressed || it.isMetaPressed) {
+                            scope.launch(Dispatchers.IO) {
+                                if (copyGifToClipboard(giphy.value)) {
+                                    showCopied.value = true
+                                    insertGiphy(giphy.value)
+                                }
+                            }
                             return@onPreviewKeyEvent true
                         }
 
@@ -156,11 +191,42 @@ fun copyGifToClipboard(giphy: Giphy?): Boolean {
     }
 
     val mediaUrl = "https://i.giphy.com/media/${giphy.id}/giphy.gif"
-    val selection = BasicTransferable(mediaUrl, "<img src='$mediaUrl'/>")
-    val textSelection = StringSelection(mediaUrl)
-    val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
 
-    clipboard.setContents(selection, textSelection)
-    GiphyAnalytics.handleGiphyEvent(giphy, GiphyEvent.SENT)
-    return true
+    try {
+        val bytes = URL(mediaUrl).readBytes()
+        val selection = GiphyTransferable(mediaUrl, bytes)
+        val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+        clipboard.setContents(selection, null)
+        GiphyAnalytics.handleGiphyEvent(giphy, GiphyEvent.SENT)
+        return true
+    } catch (e: Exception) {
+        e.printStackTrace()
+        // Fallback to simple URL copy if byte copy fails
+        val selection = StringSelection(mediaUrl)
+        val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+        clipboard.setContents(selection, null)
+        return true
+    }
+}
+
+class GiphyTransferable(private val url: String, private val gifBytes: ByteArray) : Transferable {
+    private val gifFlavor = DataFlavor("image/gif;class=java.io.InputStream", "Animated GIF")
+    private val htmlFlavor = DataFlavor("text/html;class=java.lang.String", "HTML Text")
+
+    override fun getTransferDataFlavors(): Array<DataFlavor> {
+        return arrayOf(gifFlavor, DataFlavor.stringFlavor, htmlFlavor)
+    }
+
+    override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {
+        return transferDataFlavors.any { it.equals(flavor) }
+    }
+
+    override fun getTransferData(flavor: DataFlavor): Any {
+        return when {
+            flavor.equals(gifFlavor) -> java.io.ByteArrayInputStream(gifBytes)
+            flavor.equals(DataFlavor.stringFlavor) -> url
+            flavor.equals(htmlFlavor) -> "<img src='$url' />"
+            else -> throw UnsupportedFlavorException(flavor)
+        }
+    }
 }
