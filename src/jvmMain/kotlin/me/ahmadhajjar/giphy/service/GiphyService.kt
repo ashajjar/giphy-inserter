@@ -21,7 +21,9 @@ object GiphyService {
 
     fun nextGiphy(searchTerm: String): Giphy? {
         _currentItemOnPage++
-        if (searchTerm != _searchTerm || results.size <= _currentItemOnPage) {
+        if (searchTerm.isEmpty()) {
+            fetchTrending()
+        } else if (searchTerm != _searchTerm || results.size <= _currentItemOnPage) {
             nextPage++
             fetchPage(searchTerm)
             _currentItemOnPage = 0
@@ -36,7 +38,9 @@ object GiphyService {
 
     fun previousGiphy(searchTerm: String): Giphy? {
         _currentItemOnPage--
-        if (searchTerm != _searchTerm || _currentItemOnPage < 0) {
+        if (searchTerm.isEmpty()) {
+            fetchTrending()
+        } else if (searchTerm != _searchTerm || _currentItemOnPage < 0) {
             if (_currentItemOnPage < 0) {
                 _currentItemOnPage = 0
             }
@@ -57,6 +61,21 @@ object GiphyService {
         }
     }
 
+    private fun fetchTrending() {
+        if (_searchTerm != "__TRENDING__") {
+            _searchTerm = "__TRENDING__"
+            nextPage = 0
+        }
+        val uri = URI.create(
+            "https://api.giphy.com/v1/gifs/trending?" +
+                    "api_key=$API_KEY&" +
+                    "limit=$PAGE_SIZE&" +
+                    "offset=${PAGE_SIZE * nextPage}&" +
+                    "rating=g"
+        )
+        executeRequest(uri)
+    }
+
     private fun fetchPage(searchTerm: String) {
         if (searchTerm != _searchTerm) {
             _searchTerm = searchTerm
@@ -75,7 +94,24 @@ object GiphyService {
                     "rating=g&" +
                     "lang=en"
         )
+        executeRequest(uri)
+    }
 
+    fun randomGiphy(): Giphy? {
+        val uri = URI.create(
+            "https://api.giphy.com/v1/gifs/random?" +
+                    "api_key=$API_KEY&" +
+                    "rating=g"
+        )
+        val request = HttpRequest.newBuilder()
+            .uri(uri)
+            .build()
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        val giphyResponse = Klaxon().parse<GiphyRandomResponse>(response.body())
+        return giphyResponse?.data
+    }
+
+    private fun executeRequest(uri: URI) {
         val request = HttpRequest.newBuilder()
             .uri(uri)
             .build()
@@ -88,6 +124,10 @@ object GiphyService {
 data class GiphyResponse(
     val data: List<Giphy>,
     // todo later add more meta data
+)
+
+data class GiphyRandomResponse(
+    val data: Giphy,
 )
 
 data class Giphy(
