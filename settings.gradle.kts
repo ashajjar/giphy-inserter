@@ -12,5 +12,5 @@ pluginManagement {
     }
 }
 
-rootProject.name = "GiphyInserter"
+rootProject.name = "Giphy Inserter"
 
