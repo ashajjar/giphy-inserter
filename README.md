@@ -2,6 +2,8 @@
 
 A sleek, lightweight desktop application built with **Compose for Desktop** that helps you quickly find and copy Giphy animations to your clipboard.
 
+![img.png](./docs/img.png)
+
 ## 🚀 Features
 
 - **Quick Search**: Effortlessly search for GIFs using the Giphy API.
