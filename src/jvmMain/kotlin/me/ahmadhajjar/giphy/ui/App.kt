@@ -41,10 +41,7 @@ fun WindowScope.App(onExit: () -> Unit) {
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
     val showCopied = remember { mutableStateOf(false) }
     val showSettings = remember { mutableStateOf(false) }
-
-    if (showSettings.value) {
-        SettingsDialog(onClose = { showSettings.value = false })
-    }
+    val errorMessage = remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(giphy.value) {
         if (giphy.value.id != null) {
@@ -66,6 +63,13 @@ fun WindowScope.App(onExit: () -> Unit) {
         if (showCopied.value) {
             delay(2000.milliseconds)
             showCopied.value = false
+        }
+    }
+
+    LaunchedEffect(errorMessage.value) {
+        if (errorMessage.value != null) {
+            delay(5000.milliseconds)
+            errorMessage.value = null
         }
     }
 
@@ -128,7 +132,7 @@ fun WindowScope.App(onExit: () -> Unit) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SearchTextField(searchTerm, giphy, isLoading, focusRequester, showCopied)
+                    SearchTextField(searchTerm, giphy, isLoading, focusRequester, showCopied, errorMessage)
                 }
 
                 Box(modifier = Modifier.fillMaxWidth().height(4.dp)) {
@@ -177,11 +181,27 @@ fun WindowScope.App(onExit: () -> Unit) {
                         Surface(
                             color = MaterialTheme.colors.secondary.copy(alpha = 0.9f),
                             shape = RoundedCornerShape(50),
-                            modifier = Modifier.padding(bottom = 20.dp)
+                            modifier = Modifier.padding(bottom = 20.dp).align(Alignment.BottomCenter)
                         ) {
                             Text(
                                 "Copied to Clipboard!",
                                 color = Color.Black,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.body2,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    if (errorMessage.value != null) {
+                        Surface(
+                            color = MaterialTheme.colors.error.copy(alpha = 0.9f),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.padding(bottom = 20.dp).align(Alignment.BottomCenter)
+                        ) {
+                            Text(
+                                errorMessage.value!!,
+                                color = Color.White,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.body2,
                                 fontWeight = FontWeight.Bold
@@ -199,6 +219,10 @@ fun WindowScope.App(onExit: () -> Unit) {
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
             }
+        }
+
+        if (showSettings.value) {
+            SettingsDialog(onClose = { showSettings.value = false })
         }
     }
 }

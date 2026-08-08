@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.ahmadhajjar.giphy.service.*
+import me.ahmadhajjar.giphy.config.ConfigService
 import java.awt.Toolkit
 import java.awt.datatransfer.*
 import java.net.URL
@@ -40,7 +41,8 @@ fun SearchTextField(
     giphy: MutableState<Giphy>,
     isLoading: MutableState<Boolean>,
     focusRequester: FocusRequester,
-    showCopied: MutableState<Boolean>
+    showCopied: MutableState<Boolean>,
+    errorMessage: MutableState<String?>
 ) {
     val scope = rememberCoroutineScope()
 
@@ -98,6 +100,11 @@ fun SearchTextField(
 
                     Key.R -> {
                         if (it.isCtrlPressed || it.isMetaPressed) {
+                            if (ConfigService.apiKey.isEmpty()) {
+                                errorMessage.value = "Please set your Giphy API Key in Settings (Cmd+,)"
+                                return@onPreviewKeyEvent true
+                            }
+                            errorMessage.value = null
                             if (!isLoading.value) {
                                 scope.launch(Dispatchers.IO) {
                                     isLoading.value = true
@@ -121,6 +128,12 @@ fun SearchTextField(
                             return@onPreviewKeyEvent true
                         }
 
+                        if (ConfigService.apiKey.isEmpty()) {
+                            errorMessage.value = "Please set your Giphy API Key in Settings (Cmd+,)"
+                            return@onPreviewKeyEvent true
+                        }
+                        errorMessage.value = null
+
                         if (!isLoading.value) {
                             scope.launch(Dispatchers.IO) {
                                 isLoading.value = true
@@ -143,6 +156,12 @@ fun SearchTextField(
                             }
                             return@onPreviewKeyEvent true
                         }
+
+                        if (ConfigService.apiKey.isEmpty()) {
+                            errorMessage.value = "Please set your Giphy API Key in Settings (Cmd+,)"
+                            return@onPreviewKeyEvent true
+                        }
+                        errorMessage.value = null
 
                         if (!isLoading.value) {
                             scope.launch(Dispatchers.IO) {
