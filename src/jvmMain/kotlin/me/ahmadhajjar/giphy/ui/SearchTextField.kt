@@ -16,9 +16,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -81,6 +83,11 @@ fun SearchTextField(
             .fillMaxWidth()
             .height(56.dp)
             .focusRequester(focusRequester)
+            .onFocusChanged {
+                if (it.isFocused) {
+                    searchTerm.value = searchTerm.value.copy(selection = TextRange(searchTerm.value.text.length))
+                }
+            }
             .onPreviewKeyEvent {
                 if (it.type != KeyEventType.KeyDown) {
                     return@onPreviewKeyEvent false

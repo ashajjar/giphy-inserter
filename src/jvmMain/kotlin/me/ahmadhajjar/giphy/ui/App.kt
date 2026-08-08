@@ -22,6 +22,8 @@ import androidx.compose.ui.input.key.*
 import me.ahmadhajjar.giphy.service.Giphy
 import me.ahmadhajjar.giphy.util.PlatformUtils
 import androidx.compose.ui.window.WindowScope
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -34,7 +36,7 @@ import kotlin.time.Duration.Companion.milliseconds
 fun WindowScope.App(onExit: () -> Unit) {
     val searchTerm = remember {
         val initial = listOf("Hello", "Hi", "Hey", "Welcome", "Greetings").random()
-        mutableStateOf(TextFieldValue(initial, selection = TextRange(0, initial.length)))
+        mutableStateOf(TextFieldValue(initial, selection = TextRange(initial.length)))
     }
     val giphy = remember { mutableStateOf(Giphy()) }
     val isLoading = remember { mutableStateOf(false) }
@@ -227,6 +229,12 @@ fun WindowScope.App(onExit: () -> Unit) {
         }
     }
 
+    LaunchedEffect(showSettings.value) {
+        if (!showSettings.value) {
+            focusRequester.requestFocus()
+        }
+    }
+
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         withContext(Dispatchers.IO) {
@@ -237,6 +245,19 @@ fun WindowScope.App(onExit: () -> Unit) {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    DisposableEffect(window) {
+        val listener = object : WindowAdapter() {
+            override fun windowGainedFocus(e: WindowEvent?) {
+                focusRequester.requestFocus()
+                searchTerm.value = searchTerm.value.copy(selection = TextRange(searchTerm.value.text.length))
+            }
+        }
+        window.addWindowFocusListener(listener)
+        onDispose {
+            window.removeWindowFocusListener(listener)
         }
     }
 }
