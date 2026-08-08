@@ -33,7 +33,9 @@ import me.ahmadhajjar.giphy.config.ConfigService
 import me.ahmadhajjar.giphy.util.PlatformUtils
 import java.awt.Toolkit
 import java.awt.datatransfer.*
+import java.io.File
 import java.net.URL
+import javax.imageio.ImageIO
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -202,7 +204,12 @@ fun copyGifToClipboard(giphy: Giphy?): Boolean {
 
     try {
         val bytes = URL(mediaUrl).readBytes()
-        val selection = GiphyTransferable(mediaUrl, bytes)
+
+        val tempFile = File.createTempFile("giphy", ".gif")
+        tempFile.writeBytes(bytes)
+        tempFile.deleteOnExit()
+
+        val selection = GiphyTransferable(mediaUrl, bytes, tempFile)
         val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
         clipboard.setContents(selection, null)
         GiphyAnalytics.handleGiphyEvent(giphy, GiphyEvent.SENT)
@@ -217,16 +224,16 @@ fun copyGifToClipboard(giphy: Giphy?): Boolean {
     }
 }
 
-class GiphyTransferable(private val url: String, private val gifBytes: ByteArray) : Transferable {
+class GiphyTransferable(private val url: String, private val gifBytes: ByteArray, private val gifFile: File) : Transferable {
     private val gifFlavor = DataFlavor("image/gif;class=java.io.InputStream", "Animated GIF")
     private val htmlFlavor = DataFlavor("text/html;class=java.lang.String", "HTML Text")
 
     override fun getTransferDataFlavors(): Array<DataFlavor> {
-        return arrayOf(gifFlavor, DataFlavor.stringFlavor, htmlFlavor)
+        return arrayOf(gifFlavor, DataFlavor.stringFlavor, htmlFlavor, DataFlavor.javaFileListFlavor, DataFlavor.imageFlavor)
     }
 
     override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {
-        return transferDataFlavors.any { it.equals(flavor) }
+        return getTransferDataFlavors().any { it.equals(flavor) }
     }
 
     override fun getTransferData(flavor: DataFlavor): Any {
@@ -234,6 +241,8 @@ class GiphyTransferable(private val url: String, private val gifBytes: ByteArray
             flavor.equals(gifFlavor) -> java.io.ByteArrayInputStream(gifBytes)
             flavor.equals(DataFlavor.stringFlavor) -> url
             flavor.equals(htmlFlavor) -> "<img src='$url' />"
+            flavor.equals(DataFlavor.javaFileListFlavor) -> listOf(gifFile)
+            flavor.equals(DataFlavor.imageFlavor) -> ImageIO.read(gifFile)
             else -> throw UnsupportedFlavorException(flavor)
         }
     }
