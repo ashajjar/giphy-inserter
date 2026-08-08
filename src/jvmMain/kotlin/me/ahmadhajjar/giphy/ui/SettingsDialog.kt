@@ -8,20 +8,36 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import me.ahmadhajjar.giphy.config.ConfigService
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SettingsDialog(onClose: () -> Unit) {
     var apiKey by remember { mutableStateOf(ConfigService.apiKey) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.6f))
+            .onPreviewKeyEvent {
+                if (it.type == KeyEventType.KeyDown && it.key == Key.Escape) {
+                    onClose()
+                    true
+                } else false
+            }
             .clickable(enabled = true, onClick = onClose),
         contentAlignment = Alignment.Center
     ) {
@@ -50,7 +66,25 @@ fun SettingsDialog(onClose: () -> Unit) {
                     value = apiKey,
                     onValueChange = { apiKey = it },
                     placeholder = { Text("Giphy API Key", color = Color.Gray.copy(alpha = 0.5f)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onPreviewKeyEvent {
+                            if (it.type == KeyEventType.KeyDown) {
+                                when (it.key) {
+                                    Key.Enter -> {
+                                        ConfigService.apiKey = apiKey
+                                        onClose()
+                                        true
+                                    }
+                                    Key.Escape -> {
+                                        onClose()
+                                        true
+                                    }
+                                    else -> false
+                                }
+                            } else false
+                        },
                     singleLine = true,
                     colors = TextFieldDefaults.textFieldColors(
                         textColor = Color.White,

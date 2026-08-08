@@ -28,10 +28,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.ahmadhajjar.giphy.service.*
 import me.ahmadhajjar.giphy.config.ConfigService
+import me.ahmadhajjar.giphy.util.PlatformUtils
 import java.awt.Toolkit
 import java.awt.datatransfer.*
 import java.net.URL
-import kotlin.system.exitProcess
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -42,7 +42,8 @@ fun SearchTextField(
     isLoading: MutableState<Boolean>,
     focusRequester: FocusRequester,
     showCopied: MutableState<Boolean>,
-    errorMessage: MutableState<String?>
+    errorMessage: MutableState<String?>,
+    onExit: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
@@ -86,9 +87,9 @@ fun SearchTextField(
                 }
 
                 when (it.key) {
-                    Key.Escape -> exitProcess(0)
+                    Key.Escape -> onExit()
                     Key.C -> {
-                        if (it.isCtrlPressed || it.isMetaPressed) {
+                        if (PlatformUtils.isShortcutPressed(it)) {
                             scope.launch(Dispatchers.IO) {
                                 if (copyGifToClipboard(giphy.value)) {
                                     showCopied.value = true
@@ -99,9 +100,9 @@ fun SearchTextField(
                     }
 
                     Key.R -> {
-                        if (it.isCtrlPressed || it.isMetaPressed) {
+                        if (PlatformUtils.isShortcutPressed(it)) {
                             if (ConfigService.apiKey.isEmpty()) {
-                                errorMessage.value = "Please set your Giphy API Key in Settings (Cmd+,)"
+                                errorMessage.value = "Please set your Giphy API Key in Settings (${PlatformUtils.shortcutModifierLabel}+,)"
                                 return@onPreviewKeyEvent true
                             }
                             errorMessage.value = null
@@ -119,7 +120,7 @@ fun SearchTextField(
                     }
 
                     Key.Enter, Key.DirectionDown -> {
-                        if (it.isCtrlPressed || it.isMetaPressed) {
+                        if (PlatformUtils.isShortcutPressed(it)) {
                             scope.launch(Dispatchers.IO) {
                                 if (copyGifToClipboard(giphy.value)) {
                                     showCopied.value = true
@@ -129,7 +130,7 @@ fun SearchTextField(
                         }
 
                         if (ConfigService.apiKey.isEmpty()) {
-                            errorMessage.value = "Please set your Giphy API Key in Settings (Cmd+,)"
+                            errorMessage.value = "Please set your Giphy API Key in Settings (${PlatformUtils.shortcutModifierLabel}+,)"
                             return@onPreviewKeyEvent true
                         }
                         errorMessage.value = null
@@ -147,7 +148,7 @@ fun SearchTextField(
                     }
 
                     Key.DirectionUp -> {
-                        if (it.isCtrlPressed || it.isMetaPressed) {
+                        if (PlatformUtils.isShortcutPressed(it)) {
                             scope.launch(Dispatchers.IO) {
                                 if (copyGifToClipboard(giphy.value)) {
                                     showCopied.value = true
@@ -158,7 +159,7 @@ fun SearchTextField(
                         }
 
                         if (ConfigService.apiKey.isEmpty()) {
-                            errorMessage.value = "Please set your Giphy API Key in Settings (Cmd+,)"
+                            errorMessage.value = "Please set your Giphy API Key in Settings (${PlatformUtils.shortcutModifierLabel}+,)"
                             return@onPreviewKeyEvent true
                         }
                         errorMessage.value = null

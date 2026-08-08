@@ -20,6 +20,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.input.key.*
 import me.ahmadhajjar.giphy.service.Giphy
+import me.ahmadhajjar.giphy.util.PlatformUtils
 import androidx.compose.ui.window.WindowScope
 import java.net.URL
 import kotlinx.coroutines.Dispatchers
@@ -86,7 +87,7 @@ fun WindowScope.App(onExit: () -> Unit) {
                 .background(Color.Transparent)
                 .padding(8.dp)
                 .onPreviewKeyEvent {
-                    if (it.key == Key.Comma && it.isMetaPressed && it.type == KeyEventType.KeyDown) {
+                    if (it.key == Key.Comma && PlatformUtils.isShortcutPressed(it) && it.type == KeyEventType.KeyDown) {
                         showSettings.value = true
                         true
                     } else {
@@ -131,7 +132,7 @@ fun WindowScope.App(onExit: () -> Unit) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SearchTextField(searchTerm, giphy, isLoading, focusRequester, showCopied, errorMessage)
+                    SearchTextField(searchTerm, giphy, isLoading, focusRequester, showCopied, errorMessage, onExit)
                 }
 
                 Box(modifier = Modifier.fillMaxWidth().height(4.dp)) {
