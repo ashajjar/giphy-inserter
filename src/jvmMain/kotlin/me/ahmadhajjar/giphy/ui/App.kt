@@ -72,7 +72,6 @@ fun WindowScope.App(onExit: () -> Unit) {
             errorMessage.value = null
         }
     }
-
     MaterialTheme(
         colors = darkColors(
             primary = Color(0xFFBB86FC),
@@ -220,12 +219,12 @@ fun WindowScope.App(onExit: () -> Unit) {
                 )
             }
         }
+    }
 
-        if (showSettings.value) {
+    if (showSettings.value) {
             SettingsDialog(onClose = { showSettings.value = false })
         }
     }
-}
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
