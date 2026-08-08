@@ -27,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 @Preview
 fun WindowScope.App(onExit: () -> Unit) {

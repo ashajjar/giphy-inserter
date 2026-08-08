@@ -46,7 +46,8 @@ object GiphyAnalytics {
     }
 
     private fun fetchRandomId(): String {
-        val uri = URI.create("https://api.giphy.com/v1/randomid?api_key=${GiphyService.API_KEY}")
+        val apiKey = me.ahmadhajjar.giphy.config.ConfigService.apiKey
+        val uri = URI.create("https://api.giphy.com/v1/randomid?api_key=$apiKey")
 
         val request = HttpRequest.newBuilder()
             .uri(uri)
