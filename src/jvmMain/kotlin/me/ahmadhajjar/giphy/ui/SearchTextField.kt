@@ -111,7 +111,7 @@ fun SearchTextField(
                         }
                     }
 
-                    Key.Enter -> {
+                    Key.Enter, Key.DirectionDown -> {
                         if (it.isCtrlPressed || it.isMetaPressed) {
                             scope.launch(Dispatchers.IO) {
                                 if (copyGifToClipboard(giphy.value)) {
@@ -143,6 +143,17 @@ fun SearchTextField(
                             }
                             return@onPreviewKeyEvent true
                         }
+
+                        if (!isLoading.value) {
+                            scope.launch(Dispatchers.IO) {
+                                isLoading.value = true
+                                val newGiphy = GiphyService.previousGiphy(searchTerm.value.text) ?: Giphy()
+                                giphy.value = newGiphy
+                                GiphyAnalytics.handleGiphyEvent(newGiphy, GiphyEvent.LOADED)
+                                isLoading.value = false
+                            }
+                        }
+                        return@onPreviewKeyEvent true
                     }
                 }
 
