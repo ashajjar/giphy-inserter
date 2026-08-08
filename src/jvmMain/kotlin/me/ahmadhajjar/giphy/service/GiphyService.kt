@@ -20,10 +20,11 @@ object GiphyService {
     private var isFetchingMetadata = false
 
     private const val PAGE_SIZE = 10
-    const val API_KEY = "GIPHY_API_KEY_PLACEHOLDER"
+    private val apiKey: String
+        get() = me.ahmadhajjar.giphy.config.ConfigService.apiKey
 
     fun nextGiphy(searchTerm: String): Giphy? {
-        val effectiveSearchTerm = if (searchTerm.isEmpty()) "__TRENDING__" else searchTerm
+        val effectiveSearchTerm = searchTerm.ifEmpty { "__TRENDING__" }
         if (effectiveSearchTerm != _searchTerm) {
             _searchTerm = effectiveSearchTerm
             results = mutableListOf()
@@ -113,7 +114,7 @@ object GiphyService {
     private fun fetchTrending(searchTerm: String) {
         val uri = URI.create(
             "https://api.giphy.com/v1/gifs/trending?" +
-                    "api_key=$API_KEY&" +
+                    "api_key=$apiKey&" +
                     "limit=$PAGE_SIZE&" +
                     "offset=${PAGE_SIZE * nextPage}&" +
                     "rating=g"
@@ -126,7 +127,7 @@ object GiphyService {
 
         val uri = URI.create(
             "https://api.giphy.com/v1/gifs/search?" +
-                    "api_key=$API_KEY&" +
+                    "api_key=$apiKey&" +
                     "q=$urlEncodedSearchTerm&" +
                     "limit=$PAGE_SIZE&" +
                     "offset=${PAGE_SIZE * nextPage}&" +
@@ -140,7 +141,7 @@ object GiphyService {
     fun randomGiphy(): Giphy? {
         val uri = URI.create(
             "https://api.giphy.com/v1/gifs/random?" +
-                    "api_key=$API_KEY&" +
+                    "api_key=$apiKey&" +
                     "rating=g"
         )
         val request = HttpRequest.newBuilder()

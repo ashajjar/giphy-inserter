@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.key.*
 import me.ahmadhajjar.giphy.service.Giphy
 import androidx.compose.ui.window.WindowScope
 import java.net.URL
@@ -38,6 +39,11 @@ fun WindowScope.App(onExit: () -> Unit) {
     val animatedGif = remember { mutableStateOf<AnimatedGif?>(null) }
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
     val showCopied = remember { mutableStateOf(false) }
+    val showSettings = remember { mutableStateOf(false) }
+
+    if (showSettings.value) {
+        SettingsDialog(onClose = { showSettings.value = false })
+    }
 
     LaunchedEffect(giphy.value) {
         if (giphy.value.id != null) {
@@ -74,7 +80,15 @@ fun WindowScope.App(onExit: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Transparent)
-                .padding(8.dp),
+                .padding(8.dp)
+                .onPreviewKeyEvent {
+                    if (it.key == Key.Comma && it.isMetaPressed && it.type == KeyEventType.KeyDown) {
+                        showSettings.value = true
+                        true
+                    } else {
+                        false
+                    }
+                },
             contentAlignment = Alignment.Center
         ) {
             Surface(
