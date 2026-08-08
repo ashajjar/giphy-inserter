@@ -18,12 +18,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.WindowScope
 import me.ahmadhajjar.giphy.service.Giphy
-import me.ahmadhajjar.giphy.ui.SearchTextField
+import androidx.compose.ui.window.WindowScope
 import java.net.URL
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 @Preview
@@ -34,7 +35,7 @@ fun WindowScope.App(onExit: () -> Unit) {
     }
     val giphy = remember { mutableStateOf(Giphy()) }
     val isLoading = remember { mutableStateOf(false) }
-    val animatedGif = remember { mutableStateOf<me.ahmadhajjar.giphy.ui.AnimatedGif?>(null) }
+    val animatedGif = remember { mutableStateOf<AnimatedGif?>(null) }
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
     val showCopied = remember { mutableStateOf(false) }
 
@@ -45,7 +46,7 @@ fun WindowScope.App(onExit: () -> Unit) {
             val mediaUrl = "https://i.giphy.com/media/${giphy.value.id}/giphy.gif"
             withContext(Dispatchers.IO) {
                 try {
-                    animatedGif.value = me.ahmadhajjar.giphy.ui.AnimatedGif.fromURL(URL(mediaUrl))
+                    animatedGif.value = AnimatedGif.fromURL(URL(mediaUrl))
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -56,7 +57,7 @@ fun WindowScope.App(onExit: () -> Unit) {
 
     LaunchedEffect(showCopied.value) {
         if (showCopied.value) {
-            kotlinx.coroutines.delay(2000)
+            delay(2000.milliseconds)
             showCopied.value = false
         }
     }
@@ -173,7 +174,7 @@ fun WindowScope.App(onExit: () -> Unit) {
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
@@ -192,7 +193,7 @@ fun WindowScope.App(onExit: () -> Unit) {
         withContext(Dispatchers.IO) {
             try {
                 if (animatedGif.value == null) {
-                    animatedGif.value = me.ahmadhajjar.giphy.ui.AnimatedGif.fromResource("giphy.gif")
+                    animatedGif.value = AnimatedGif.fromResource("giphy.gif")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

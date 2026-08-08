@@ -86,7 +86,7 @@ class AnimatedGif(
 
                 val frameRectField = try {
                     AnimationFrameInfo::class.java.getDeclaredField("frameRect").apply { isAccessible = true }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
 

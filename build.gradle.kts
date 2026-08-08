@@ -27,7 +27,11 @@ kotlin {
                 implementation("com.beust:klaxon:5.5")
             }
         }
-        val jvmTest by getting
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
     }
 }
 
@@ -36,10 +40,11 @@ compose.desktop {
 
     application {
         mainClass = "me.ahmadhajjar.giphy.MainKt"
+        jvmArgs("-Dapple.awt.application.name=Giphy Inserter", "-Xdock:name=Giphy Inserter")
         nativeDistributions {
             includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "GiphyInserter"
+            packageName = "Giphy Inserter"
             packageVersion = "1.0.1"
             version = "1.0.1"
             description = "Helps you search and navigate giphy searches and copy giphies"

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -25,10 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import me.ahmadhajjar.giphy.service.*
-import me.ahmadhajjar.giphy.utils.BasicTransferable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.ahmadhajjar.giphy.service.*
 import java.awt.Toolkit
 import java.awt.datatransfer.*
 import java.net.URL
