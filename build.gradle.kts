@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "me.ahmadhajjar.giphy"
-version = "1.0.4"
+version = "1.0.5"
 
 repositories {
     google()
@@ -45,8 +45,8 @@ compose.desktop {
             includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Giphy Inserter"
-            packageVersion = "1.0.4"
-            version = "1.0.4"
+            packageVersion = "1.0.5"
+            version = "1.0.5"
             description = "Helps you search and navigate giphy searches and copy giphies"
             vendor = "Ahmad Hajjar"
             macOS {

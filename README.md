@@ -1,5 +1,8 @@
 # ✨ Giphy Inserter
 
+[![Build and Package](https://github.com/ashajjar/giphy-inserter-private/actions/workflows/build.yml/badge.svg)](https://github.com/ashajjar/giphy-inserter-private/actions/workflows/build.yml)
+[![Latest Release](https://img.shields.io/github/v/release/ashajjar/giphy-inserter-private)](https://github.com/ashajjar/giphy-inserter-private/releases/latest)
+
 A sleek, lightweight desktop application built with **Compose for Desktop** that helps you quickly find and copy Giphy animations to your clipboard.
 
 ![img.png](./docs/img.png)
@@ -26,11 +29,11 @@ A sleek, lightweight desktop application built with **Compose for Desktop** that
 
 ## 📦 Installation
 
-You can either check out the source code and build the app yourself or download the latest release from the release page.
+You can either check out the source code and build the app yourself or download the latest release from the [release page](https://github.com/ashajjar/giphy-inserter-private/releases/latest).
 
 If you choose to download the latest release, you have to follow these steps to install it and be able to use it:
 
-1. Download the latest version from the releases page.
+1. Download the latest version from the [releases page](https://github.com/ashajjar/giphy-inserter-private/releases/latest).
 2. Open the `.dmg` file and drag **Giphy Inserter** to your **Applications** folder.
 
 #### Bypassing macOS Gatekeeper
