@@ -66,7 +66,7 @@ To use the application, you need a Giphy API Key:
 ## 🛠 Development
 
 ### Prerequisites
-- JDK 11 or higher.
+- JDK 11 or higher (JDK 15 or higher is required for building native distributions).
 
 ### Running the App
 ```bash
