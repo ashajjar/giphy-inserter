@@ -43,12 +43,14 @@ class GiphyTransferableTest {
 
     @Test
     fun testAppleScriptSetsClipboardToPosixFile() {
-        val file = File("/tmp/example gif\"path.gif")
+        // Build expectation from absolutePath so this passes on Windows CI and macOS/Linux.
+        val file = File("example gif\"path.gif")
+        val escapedPath = file.absolutePath
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
         val script = ClipboardUtil.appleScriptSetClipboardToFile(file)
-        assertEquals(
-            "set the clipboard to POSIX file \"/tmp/example gif\\\"path.gif\"",
-            script
-        )
+        assertEquals("set the clipboard to POSIX file \"$escapedPath\"", script)
+        assertTrue(escapedPath.contains("\\\""), "quotes in the path must be AppleScript-escaped")
     }
 
     @Test
