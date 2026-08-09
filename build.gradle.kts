@@ -66,7 +66,7 @@ compose.desktop {
             linux {
                 // Linux specific options
                 iconFile.set(resourcesRoot.resolve("icons/icon-big.png"))
-                packageName = "Giphy Inserter"
+                packageName = "giphy-inserter"
                 debMaintainer = "contact@ahmadhajjar.me"
                 menuGroup = "Giphy Inserter"
                 appRelease = "1"
