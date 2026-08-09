@@ -24,7 +24,7 @@ fun main() {
             val iconUrl = Thread.currentThread().contextClassLoader.getResource("icons/icon-big.png")
             val icon = Toolkit.getDefaultToolkit().getImage(iconUrl)
             taskbar.iconImage = icon
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Taskbar might not be supported or icon missing
         }
     }
