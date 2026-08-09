@@ -24,6 +24,37 @@ A sleek, lightweight desktop application built with **Compose for Desktop** that
 
 *Note: For Windows/Linux, use `Ctrl` instead of `Cmd`.*
 
+## 📦 Installation
+
+You can either check out the source code and build the app yourself or download the latest release from the release page.
+
+If you choose to download the latest release, you have to follow these steps to install it and be able to use it:
+
+1. Download the latest version from the releases page.
+2. Open the `.dmg` file and drag **Giphy Inserter** to your **Applications** folder.
+
+#### Bypassing macOS Gatekeeper
+Since this application is not signed by a recognized developer, macOS might block it from opening. Follow these steps to allow it:
+
+1. **Attempt to Open**: Try to open the app. If a warning appears, click **Done**.
+
+   ![attempt to open](./docs/attempt-opening.png)
+
+2. **Open System Settings**: Go to the Apple menu  > **System Settings**.
+3. **Privacy & Security**: Navigate to **Privacy & Security** in the sidebar.
+4. **Security Section**: Scroll down to the **Security** section. You will see a message saying `"Giphy Inserter.app" was blocked`.
+5. **Open Anyway**: Click the **Open Anyway** button.
+   ![Open Security Settings](./docs/open-security-settings.png)
+6. **Authenticate**: Enter your administrator password or use Touch ID to confirm.
+   
+   ![Enter Password](./docs/enter-you-password.png)
+
+7. **Confirm**: A final dialog will appear. Click **Open Anyway**.
+
+   ![Click Open Anyway](./docs/click-open-anyway.png)
+
+For more information, see [Apple's official guide on opening apps from unknown developers](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac).
+
 ## ⚙️ Configuration
 
 To use the application, you need a Giphy API Key:
@@ -47,8 +78,6 @@ You can build native distributions for your operating system:
 - **macOS**: `./gradlew packageDmg`
 - **Windows**: `./gradlew packageMsi`
 - **Linux**: `./gradlew packageDeb`
-
-Native installers will be generated in `build/compose/binaries`.
 
 ---
 *Built with ❤️ using Compose for Desktop.*
