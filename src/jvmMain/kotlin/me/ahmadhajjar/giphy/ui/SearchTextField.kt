@@ -40,16 +40,10 @@ import me.ahmadhajjar.giphy.service.Giphy
 import me.ahmadhajjar.giphy.service.GiphyAnalytics
 import me.ahmadhajjar.giphy.service.GiphyEvent
 import me.ahmadhajjar.giphy.service.GiphyService
-import me.ahmadhajjar.giphy.util.PlatformUtils
-import java.awt.Toolkit
-import java.awt.datatransfer.Clipboard
-import java.awt.datatransfer.DataFlavor
-import java.awt.datatransfer.StringSelection
-import java.awt.datatransfer.Transferable
-import java.awt.datatransfer.UnsupportedFlavorException
+import me.ahmadhajjar.giphy.utils.ClipboardUtil
+import me.ahmadhajjar.giphy.utils.PlatformUtils
 import java.io.File
 import java.net.URL
-import javax.imageio.ImageIO
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -217,48 +211,20 @@ fun copyGifToClipboard(giphy: Giphy?): Boolean {
 
     val mediaUrl = "https://i.giphy.com/media/${giphy.id}/giphy.gif"
 
-    try {
+    return try {
         val bytes = URL(mediaUrl).readBytes()
-
-        val tempFile = File.createTempFile("giphy", ".gif")
+        // Keep a stable .gif name so paste targets treat this as GIF media.
+        val tempFile = File.createTempFile("giphy-${giphy.id}-", ".gif")
         tempFile.writeBytes(bytes)
         tempFile.deleteOnExit()
 
-        val selection = GiphyTransferable(mediaUrl, bytes, tempFile)
-        val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        clipboard.setContents(selection, null)
-        GiphyAnalytics.handleGiphyEvent(giphy, GiphyEvent.SENT)
-        return true
+        val copied = ClipboardUtil.copyAnimatedGif(tempFile, bytes)
+        if (copied) {
+            GiphyAnalytics.handleGiphyEvent(giphy, GiphyEvent.SENT)
+        }
+        copied
     } catch (e: Exception) {
         e.printStackTrace()
-        // Fallback to simple URL copy if byte copy fails
-        val selection = StringSelection(mediaUrl)
-        val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        clipboard.setContents(selection, null)
-        return true
-    }
-}
-
-class GiphyTransferable(private val url: String, private val gifBytes: ByteArray, private val gifFile: File) : Transferable {
-    private val gifFlavor = DataFlavor("image/gif;class=java.io.InputStream", "Animated GIF")
-    private val htmlFlavor = DataFlavor("text/html;class=java.lang.String", "HTML Text")
-
-    override fun getTransferDataFlavors(): Array<DataFlavor> {
-        return arrayOf(gifFlavor, DataFlavor.stringFlavor, htmlFlavor, DataFlavor.javaFileListFlavor, DataFlavor.imageFlavor)
-    }
-
-    override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {
-        return getTransferDataFlavors().any { it.equals(flavor) }
-    }
-
-    override fun getTransferData(flavor: DataFlavor): Any {
-        return when {
-            flavor.equals(gifFlavor) -> java.io.ByteArrayInputStream(gifBytes)
-            flavor.equals(DataFlavor.stringFlavor) -> url
-            flavor.equals(htmlFlavor) -> "<img src='$url' />"
-            flavor.equals(DataFlavor.javaFileListFlavor) -> listOf(gifFile)
-            flavor.equals(DataFlavor.imageFlavor) -> ImageIO.read(gifFile)
-            else -> throw UnsupportedFlavorException(flavor)
-        }
+        false
     }
 }

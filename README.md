@@ -20,7 +20,7 @@ A sleek, lightweight desktop application built with **Compose for Desktop** that
 
 - `Enter` / `Down Arrow`: Fetch next GIF for the current search.
 - `Up Arrow`: Fetch previous GIF.
-- `Cmd + C` (macOS): Copy current GIF to clipboard (as GIF file, URL, and HTML).
+- `Cmd + C` (macOS): Copy current GIF to clipboard as animated GIF media (pasteable into WhatsApp, Slack, etc.).
 - `Cmd + R` (macOS): Fetch a random GIF.
 - `Cmd + ,` (macOS): Open Settings.
 - `Esc`: Exit application.

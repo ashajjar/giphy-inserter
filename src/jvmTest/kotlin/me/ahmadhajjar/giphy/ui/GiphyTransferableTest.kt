@@ -1,34 +1,66 @@
 package me.ahmadhajjar.giphy.ui
 
+import me.ahmadhajjar.giphy.utils.ClipboardUtil
+import me.ahmadhajjar.giphy.utils.GifFileTransferable
 import org.junit.Test
 import java.awt.datatransfer.DataFlavor
 import java.io.File
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GiphyTransferableTest {
 
+    private val minimalGifBytes = byteArrayOf(
+        0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80.toByte(), 0x00, 0x00,
+        0xff.toByte(), 0xff.toByte(), 0xff.toByte(),
+        0x00, 0x00, 0x00, 0x21, 0xf9.toByte(), 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00,
+        0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b
+    )
+
     @Test
-    fun testGiphyTransferableFlavors() {
-        val url = "https://example.com/giphy.gif"
-        val bytes = byteArrayOf(1, 2, 3)
+    fun testGifFileTransferableExposesMediaFlavorsWithoutUrlText() {
         val tempFile = File.createTempFile("test", ".gif")
         tempFile.deleteOnExit()
+        tempFile.writeBytes(minimalGifBytes)
 
-        val transferable = GiphyTransferable(url, bytes, tempFile)
-        val flavors = transferable.transferDataFlavors
+        val transferable = GifFileTransferable(tempFile, minimalGifBytes)
 
-        assertTrue(transferable.isDataFlavorSupported(DataFlavor.stringFlavor))
+        // Chat apps paste links when stringFlavor is present — keep it absent.
+        assertFalse(transferable.isDataFlavorSupported(DataFlavor.stringFlavor))
         assertTrue(transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
-        assertTrue(transferable.isDataFlavorSupported(DataFlavor.imageFlavor))
 
         val gifFlavor = DataFlavor("image/gif;class=java.io.InputStream", "Animated GIF")
         assertTrue(transferable.isDataFlavorSupported(gifFlavor))
 
-        assertEquals(url, transferable.getTransferData(DataFlavor.stringFlavor))
+        val inputStream = transferable.getTransferData(gifFlavor) as java.io.InputStream
+        assertTrue(inputStream.readBytes().contentEquals(minimalGifBytes))
 
-        val files = transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
+        val files = transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<*>
         assertEquals(1, files.size)
         assertEquals(tempFile, files[0])
+    }
+
+    @Test
+    fun testAppleScriptSetsClipboardToPosixFile() {
+        val file = File("/tmp/example gif\"path.gif")
+        val script = ClipboardUtil.appleScriptSetClipboardToFile(file)
+        assertEquals(
+            "set the clipboard to POSIX file \"/tmp/example gif\\\"path.gif\"",
+            script
+        )
+    }
+
+    @Test
+    fun testJxaScriptWritesGifUtisWithoutPlainTextOrFileUrl() {
+        val script = ClipboardUtil.jxaSetClipboardToAnimatedGif()
+        assertTrue(script.contains("com.compuserve.gif"))
+        assertTrue(script.contains("public.gif"))
+        assertTrue(script.contains("NSFilenamesPboardType"))
+        assertTrue(script.contains("writeObjects"))
+        assertFalse(script.contains("public.utf8-plain-text"))
+        assertFalse(script.contains("NSPasteboardTypeString"))
+        // Catalyst apps (WhatsApp) can crash when public.file-url is on the pasteboard.
+        assertFalse(script.contains("public.file-url"))
     }
 }

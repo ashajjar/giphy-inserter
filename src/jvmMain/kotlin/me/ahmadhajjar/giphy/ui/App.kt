@@ -31,7 +31,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -50,7 +49,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import me.ahmadhajjar.giphy.service.Giphy
-import me.ahmadhajjar.giphy.util.PlatformUtils
+import me.ahmadhajjar.giphy.utils.PlatformUtils
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.net.URL

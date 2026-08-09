@@ -1,4 +1,4 @@
-package me.ahmadhajjar.giphy.util
+package me.ahmadhajjar.giphy.utils
 
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.isCtrlPressed
