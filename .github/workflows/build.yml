@@ -1,0 +1,59 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            task: packageDmg
+            artifact-path: build/compose/binaries/main/dmg/*.dmg
+            prefix: ""
+          - os: windows-latest
+            task: packageMsi
+            artifact-path: build/compose/binaries/main/msi/*.msi
+            prefix: ""
+          - os: ubuntu-latest
+            task: packageDeb
+            artifact-path: build/compose/binaries/main/deb/*.deb
+            prefix: "xvfb-run"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Install dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libgbm-dev libnotify-dev xvfb
+
+      - name: Build and Package
+        shell: bash
+        run: ${{ matrix.prefix }} ./gradlew check ${{ matrix.task }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-package
+          path: ${{ matrix.artifact-path }}
+          if-no-files-found: error
