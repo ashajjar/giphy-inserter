@@ -176,7 +176,7 @@ fun SearchTextField(
                         if (!isLoading.value) {
                             scope.launch(Dispatchers.IO) {
                                 isLoading.value = true
-                                val newGiphy = GiphyService.previousGiphy(searchTerm.value.text) ?: Giphy()
+                                val newGiphy = GiphyService.previousGiphy() ?: Giphy()
                                 giphy.value = newGiphy
                                 GiphyAnalytics.handleGiphyEvent(newGiphy, GiphyEvent.LOADED)
                                 isLoading.value = false
@@ -192,7 +192,8 @@ fun SearchTextField(
 }
 
 fun insertGiphy(giphy: Giphy?) {
-
+    // todo later implement insert giphy
+    println("Inserting Giphy: ${giphy?.id}")
 }
 
 fun copyGifToClipboard(giphy: Giphy?): Boolean {

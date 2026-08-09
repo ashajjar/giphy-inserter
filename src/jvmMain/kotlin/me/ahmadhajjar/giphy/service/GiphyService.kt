@@ -41,7 +41,7 @@ object GiphyService {
         return if (results.isNotEmpty() && _currentIndex < results.size) {
             val currentGiphy = results[_currentIndex]
 
-            // Pre-load images for the next 5 giphies
+            // Preload images for the next 5 giphies
             val nextIdx = _currentIndex + 1
             val endIdx = (nextIdx + 5).coerceAtMost(results.size)
             if (nextIdx < endIdx) {
@@ -59,7 +59,7 @@ object GiphyService {
         }
     }
 
-    fun previousGiphy(searchTerm: String): Giphy? {
+    fun previousGiphy(): Giphy? {
         _currentIndex--
         if (_currentIndex < 0) {
             _currentIndex = 0
@@ -101,7 +101,7 @@ object GiphyService {
                     try {
                         val mediaUrl = "https://i.giphy.com/media/${giphy.id}/giphy.gif"
                         giphy.icon = ImageIcon(URL(mediaUrl))
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         // Ignore
                     } finally {
                         giphy.isPreloading = false
@@ -160,7 +160,7 @@ object GiphyService {
         val giphyResponse = Klaxon().parse<GiphyResponse>(response.body())
         val newGiphies = giphyResponse?.data ?: emptyList()
 
-        val effectiveSearchTerm = if (searchTerm.isEmpty()) "__TRENDING__" else searchTerm
+        val effectiveSearchTerm = searchTerm.ifEmpty { "__TRENDING__" }
         if (effectiveSearchTerm == _searchTerm) {
             results.addAll(newGiphies)
         }
@@ -169,7 +169,7 @@ object GiphyService {
 
 data class GiphyResponse(
     val data: List<Giphy>,
-    // todo later add more meta data
+    // todo later add more metadata
 )
 
 data class GiphyRandomResponse(
@@ -181,7 +181,7 @@ data class Giphy(
     var url: String? = null,
     var images: GiphyImages? = null,
     var analytics: GiphyAnalyticsObject? = null,
-    @com.beust.klaxon.Json(ignored = true) var icon: javax.swing.ImageIcon? = null,
+    @com.beust.klaxon.Json(ignored = true) var icon: ImageIcon? = null,
     @com.beust.klaxon.Json(ignored = true) var isPreloading: Boolean = false
 )
 
