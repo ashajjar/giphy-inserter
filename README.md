@@ -1,7 +1,7 @@
 # ✨ Giphy Inserter
 
 [![Build and Package](https://github.com/ashajjar/giphy-inserter-private/actions/workflows/build.yml/badge.svg)](https://github.com/ashajjar/giphy-inserter-private/actions/workflows/build.yml)
-[![Latest Release](https://img.shields.io/github/v/release/ashajjar/giphy-inserter-private)](https://github.com/ashajjar/giphy-inserter-private/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/tag/ashajjar/giphy-inserter-private?label=release)](https://github.com/ashajjar/giphy-inserter-private/releases/latest)
 
 A sleek, lightweight desktop application built with **Compose for Desktop** that helps you quickly find and copy Giphy animations to your clipboard.
 
