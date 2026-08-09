@@ -1,6 +1,5 @@
 package me.ahmadhajjar.giphy
 
-import me.ahmadhajjar.giphy.ui.App
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -9,7 +8,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.*
+import androidx.compose.ui.window.Tray
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
+import me.ahmadhajjar.giphy.ui.App
 import java.awt.Taskbar
 import java.awt.Toolkit
 

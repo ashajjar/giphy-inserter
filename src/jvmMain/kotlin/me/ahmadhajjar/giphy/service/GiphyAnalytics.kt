@@ -19,13 +19,13 @@ object GiphyAnalytics {
 
     fun handleGiphyEvent(giphy: Giphy, event: GiphyEvent) {
         val url = getUrlForEvent(giphy, event) ?: return
-        
-        // Use a background task for analytics to avoid blocking
+
+// Use a background task for analytics to avoid blocking
         Thread {
             try {
                 val randomId = getUserId()
                 val time = System.currentTimeMillis()
-                val uri = URI.create(url + "&ts=${time}&random_id=$randomId")
+                val uri = URI.create(url + "&ts=$time&random_id=$randomId")
 
                 val request = HttpRequest.newBuilder()
                     .uri(uri)

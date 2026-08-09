@@ -1,8 +1,8 @@
 package me.ahmadhajjar.giphy.ui
 
+import org.junit.Test
 import java.awt.datatransfer.DataFlavor
 import java.io.File
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -21,12 +21,12 @@ class GiphyTransferableTest {
         assertTrue(transferable.isDataFlavorSupported(DataFlavor.stringFlavor))
         assertTrue(transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
         assertTrue(transferable.isDataFlavorSupported(DataFlavor.imageFlavor))
-        
+
         val gifFlavor = DataFlavor("image/gif;class=java.io.InputStream", "Animated GIF")
         assertTrue(transferable.isDataFlavorSupported(gifFlavor))
 
         assertEquals(url, transferable.getTransferData(DataFlavor.stringFlavor))
-        
+
         val files = transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
         assertEquals(1, files.size)
         assertEquals(tempFile, files[0])

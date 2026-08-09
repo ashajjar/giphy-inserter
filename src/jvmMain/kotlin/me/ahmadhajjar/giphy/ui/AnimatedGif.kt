@@ -1,6 +1,10 @@
 package me.ahmadhajjar.giphy.ui
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateValue
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
@@ -10,10 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.graphics.drawscope.scale
-import org.jetbrains.skia.*
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import org.jetbrains.skia.AnimationFrameInfo
+import org.jetbrains.skia.Bitmap
+import org.jetbrains.skia.Codec
+import org.jetbrains.skia.Data
+import org.jetbrains.skia.IRect
+import org.jetbrains.skia.Image
+import org.jetbrains.skia.ImageInfo
 import java.net.URL
+import org.jetbrains.skia.Canvas as SkiaCanvas
 
 @Composable
 fun AnimatedGif(gif: AnimatedGif, modifier: Modifier) {
@@ -97,7 +108,7 @@ class AnimatedGif(
                     val requiredFrame = frameInfo.requiredFrame
                     if (requiredFrame != -1 && cachedBitmaps.containsKey(requiredFrame)) {
                         val prev = cachedBitmaps[requiredFrame]!!
-                        Canvas(masterBitmap).drawImage(Image.makeFromBitmap(prev), 0f, 0f)
+                        SkiaCanvas(masterBitmap).drawImage(Image.makeFromBitmap(prev), 0f, 0f)
                     } else if (requiredFrame == -1) {
                         masterBitmap.erase(0)
                     }
@@ -115,7 +126,7 @@ class AnimatedGif(
                     // 4. Handle disposal for future dependencies
                     val nextBase = Bitmap()
                     nextBase.allocPixels(imageInfo)
-                    Canvas(nextBase).drawImage(Image.makeFromBitmap(masterBitmap), 0f, 0f)
+                    SkiaCanvas(nextBase).drawImage(Image.makeFromBitmap(masterBitmap), 0f, 0f)
 
                     // Using ordinals because Skiko enum names can vary across versions
                     // Typical Skia/Skiko ordinals: 0: UNSPECIFIED, 1: KEEP, 2: RESTORE_BACKGROUND, 3: RESTORE_PREVIOUS
@@ -132,7 +143,7 @@ class AnimatedGif(
                         3 -> {
                             if (requiredFrame != -1 && cachedBitmaps.containsKey(requiredFrame)) {
                                 val prev = cachedBitmaps[requiredFrame]!!
-                                Canvas(nextBase).drawImage(Image.makeFromBitmap(prev), 0f, 0f)
+                                SkiaCanvas(nextBase).drawImage(Image.makeFromBitmap(prev), 0f, 0f)
                             } else {
                                 nextBase.erase(0)
                             }

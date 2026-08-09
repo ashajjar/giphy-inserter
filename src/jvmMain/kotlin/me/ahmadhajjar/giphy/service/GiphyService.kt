@@ -10,7 +10,6 @@ import java.net.http.HttpResponse
 import java.nio.charset.Charset
 import javax.swing.ImageIcon
 
-
 object GiphyService {
     private var nextPage: Int = 0
     private var results: MutableList<Giphy> = mutableListOf()
@@ -114,10 +113,10 @@ object GiphyService {
     private fun fetchTrending(searchTerm: String) {
         val uri = URI.create(
             "https://api.giphy.com/v1/gifs/trending?" +
-                    "api_key=$apiKey&" +
-                    "limit=$PAGE_SIZE&" +
-                    "offset=${PAGE_SIZE * nextPage}&" +
-                    "rating=g"
+                "api_key=$apiKey&" +
+                "limit=$PAGE_SIZE&" +
+                "offset=${PAGE_SIZE * nextPage}&" +
+                "rating=g"
         )
         executeRequest(uri, searchTerm)
     }
@@ -127,13 +126,13 @@ object GiphyService {
 
         val uri = URI.create(
             "https://api.giphy.com/v1/gifs/search?" +
-                    "api_key=$apiKey&" +
-                    "q=$urlEncodedSearchTerm&" +
-                    "limit=$PAGE_SIZE&" +
-                    "offset=${PAGE_SIZE * nextPage}&" +
-                    "random_id=${GiphyAnalytics.getUserId()}&" +
-                    "rating=g&" +
-                    "lang=en"
+                "api_key=$apiKey&" +
+                "q=$urlEncodedSearchTerm&" +
+                "limit=$PAGE_SIZE&" +
+                "offset=${PAGE_SIZE * nextPage}&" +
+                "random_id=${GiphyAnalytics.getUserId()}&" +
+                "rating=g&" +
+                "lang=en"
         )
         executeRequest(uri, searchTerm)
     }
@@ -141,8 +140,8 @@ object GiphyService {
     fun randomGiphy(): Giphy? {
         val uri = URI.create(
             "https://api.giphy.com/v1/gifs/random?" +
-                    "api_key=$apiKey&" +
-                    "rating=g"
+                "api_key=$apiKey&" +
+                "rating=g"
         )
         val request = HttpRequest.newBuilder()
             .uri(uri)
