@@ -209,10 +209,11 @@ fun copyGifToClipboard(giphy: Giphy?): Boolean {
         return false
     }
 
-    val mediaUrl = "https://i.giphy.com/media/${giphy.id}/giphy.gif"
+    val mediaUrl = giphy.images?.original?.url
+        ?: "https://i.giphy.com/media/${giphy.id}/giphy.gif"
 
     return try {
-        val bytes = URL(mediaUrl).readBytes()
+        val bytes = me.ahmadhajjar.giphy.utils.NetworkUtils.downloadBytes(mediaUrl)
         // Keep a stable .gif name so paste targets treat this as GIF media.
         val tempFile = File.createTempFile("giphy-${giphy.id}-", ".gif")
         tempFile.writeBytes(bytes)

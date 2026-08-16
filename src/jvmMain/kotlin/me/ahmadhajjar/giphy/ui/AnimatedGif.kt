@@ -69,8 +69,8 @@ class AnimatedGif(
     )
 
     companion object {
-        fun fromURL(url: URL): AnimatedGif {
-            return fromBytes(url.readBytes())
+        fun fromURL(url: java.net.URL): AnimatedGif {
+            return fromBytes(me.ahmadhajjar.giphy.utils.NetworkUtils.downloadBytes(url.toString()))
         }
 
         fun fromResource(path: String): AnimatedGif {
@@ -80,6 +80,9 @@ class AnimatedGif(
         }
 
         fun fromBytes(bytes: ByteArray): AnimatedGif {
+            if (bytes.isEmpty()) {
+                throw IllegalArgumentException("Cannot create AnimatedGif from empty bytes")
+            }
             return Data.makeFromBytes(bytes).use { data ->
                 fromData(data)
             }

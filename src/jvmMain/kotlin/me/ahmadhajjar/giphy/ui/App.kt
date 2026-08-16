@@ -75,7 +75,8 @@ fun WindowScope.App(onExit: () -> Unit) {
         if (giphy.value.id != null) {
             isLoading.value = true
 
-            val mediaUrl = "https://i.giphy.com/media/${giphy.value.id}/giphy.gif"
+            val mediaUrl = giphy.value.images?.original?.url
+                ?: "https://i.giphy.com/media/${giphy.value.id}/giphy.gif"
             withContext(Dispatchers.IO) {
                 try {
                     animatedGif.value = AnimatedGif.fromURL(URL(mediaUrl))

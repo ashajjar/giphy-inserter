@@ -98,8 +98,11 @@ object GiphyService {
                 if (giphy.icon == null && giphy.id != null && !giphy.isPreloading) {
                     giphy.isPreloading = true
                     try {
-                        val mediaUrl = "https://i.giphy.com/media/${giphy.id}/giphy.gif"
-                        giphy.icon = ImageIcon(URL(mediaUrl))
+                        val mediaUrl = giphy.images?.downsizedMedium?.url
+                            ?: giphy.images?.original?.url
+                            ?: "https://i.giphy.com/media/${giphy.id}/giphy.gif"
+                        val bytes = me.ahmadhajjar.giphy.utils.NetworkUtils.downloadBytes(mediaUrl)
+                        giphy.icon = ImageIcon(bytes)
                     } catch (_: Exception) {
                         // Ignore
                     } finally {
@@ -145,6 +148,7 @@ object GiphyService {
         )
         val request = HttpRequest.newBuilder()
             .uri(uri)
+            .header("User-Agent", me.ahmadhajjar.giphy.utils.NetworkUtils.USER_AGENT)
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         val giphyResponse = Klaxon().parse<GiphyRandomResponse>(response.body())
@@ -154,6 +158,7 @@ object GiphyService {
     private fun executeRequest(uri: URI, searchTerm: String) {
         val request = HttpRequest.newBuilder()
             .uri(uri)
+            .header("User-Agent", me.ahmadhajjar.giphy.utils.NetworkUtils.USER_AGENT)
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         val giphyResponse = Klaxon().parse<GiphyResponse>(response.body())
@@ -187,9 +192,9 @@ data class Giphy(
 data class GiphyImages(
     var original: GiphyImageDetails? = null,
     var downsized: GiphyImageDetails? = null,
-    var downsizedLarge: GiphyImageDetails? = null,
-    var downsizedMedium: GiphyImageDetails? = null,
-    var downsizedSmall: GiphyImageDetails? = null,
+    @com.beust.klaxon.Json(name = "downsized_large") var downsizedLarge: GiphyImageDetails? = null,
+    @com.beust.klaxon.Json(name = "downsized_medium") var downsizedMedium: GiphyImageDetails? = null,
+    @com.beust.klaxon.Json(name = "downsized_small") var downsizedSmall: GiphyImageDetails? = null,
 )
 
 data class GiphyImageDetails(

@@ -29,6 +29,7 @@ object GiphyAnalytics {
 
                 val request = HttpRequest.newBuilder()
                     .uri(uri)
+                    .header("User-Agent", me.ahmadhajjar.giphy.utils.NetworkUtils.USER_AGENT)
                     .build()
                 client.send(request, HttpResponse.BodyHandlers.ofString())
             } catch (e: Exception) {
@@ -51,6 +52,7 @@ object GiphyAnalytics {
 
         val request = HttpRequest.newBuilder()
             .uri(uri)
+            .header("User-Agent", me.ahmadhajjar.giphy.utils.NetworkUtils.USER_AGENT)
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         val randomIdResponse = Klaxon().parse<GiphyRandomIdResponse>(response.body())
