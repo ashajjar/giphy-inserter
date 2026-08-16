@@ -219,7 +219,9 @@ fun copyGifToClipboard(giphy: Giphy?): Boolean {
         tempFile.writeBytes(bytes)
         tempFile.deleteOnExit()
 
-        val copied = ClipboardUtil.copyAnimatedGif(tempFile, bytes)
+        // Prefer the Giphy page URL (nice to share); fall back to the direct media URL.
+        val pasteUrl = giphy.url?.takeIf { it.isNotBlank() } ?: mediaUrl
+        val copied = ClipboardUtil.copyAnimatedGif(tempFile, bytes, pasteUrl)
         if (copied) {
             GiphyAnalytics.handleGiphyEvent(giphy, GiphyEvent.SENT)
         }

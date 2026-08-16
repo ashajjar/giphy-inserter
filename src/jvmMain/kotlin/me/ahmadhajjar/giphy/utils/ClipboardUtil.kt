@@ -11,40 +11,44 @@ import java.util.ArrayList
 import java.util.concurrent.TimeUnit
 
 /**
- * Copies an animated GIF as clipboard *media* (file / GIF bytes), not as a URL string.
+ * Copies an animated GIF as clipboard *media* (file / GIF bytes), with a text URL
+ * as a lower-priority fallback so plain-text targets (e.g. code editors) can still
+ * paste the Giphy link.
  *
- * Apps like WhatsApp prefer plain-text flavors when present, which is why including the
- * Giphy link caused paste-as-link instead of a multimedia attachment.
+ * The URL is placed on a *separate* NSPasteboardItem after the media item, so
+ * image-capable apps (WhatsApp, Slack, Messages) still pick the GIF, while
+ * text-only targets fall through to the string flavor.
  */
 object ClipboardUtil {
-    fun copyAnimatedGif(gifFile: File, gifBytes: ByteArray): Boolean {
+    fun copyAnimatedGif(gifFile: File, gifBytes: ByteArray, url: String? = null): Boolean {
         if (!gifFile.exists() || gifBytes.isEmpty()) {
             return false
         }
 
-        if (PlatformUtils.isMac && copyGifViaMacPasteboard(gifFile)) {
+        if (PlatformUtils.isMac && copyGifViaMacPasteboard(gifFile, url)) {
             return true
         }
 
-        return copyGifViaAwt(gifFile, gifBytes)
+        return copyGifViaAwt(gifFile, gifBytes, url)
     }
 
     /**
-     * On macOS, put both:
-     * - raw GIF bytes under native UTIs (`com.compuserve.gif` / `public.gif`)
-     * - a POSIX file reference
-     *
-     * Chat apps then paste a multimedia attachment instead of a URL. Plain-text /
-     * HTML link flavors are intentionally omitted.
+     * On macOS, put:
+     * - raw GIF bytes under native UTIs (`com.compuserve.gif` / `public.gif`) on item 1
+     * - a POSIX filename list for legacy chat clients
+     * - the Giphy URL as `public.utf8-plain-text` on a *second* pasteboard item so it
+     *   only surfaces in text-only paste targets.
      */
-    internal fun copyGifViaMacPasteboard(gifFile: File): Boolean {
+    internal fun copyGifViaMacPasteboard(gifFile: File, url: String?): Boolean {
         return try {
-            val process = ProcessBuilder(
+            val args = mutableListOf(
                 "osascript",
                 "-l", "JavaScript",
                 "-e", jxaSetClipboardToAnimatedGif(),
                 gifFile.absolutePath,
             )
+            if (!url.isNullOrEmpty()) args += url
+            val process = ProcessBuilder(args)
                 .redirectErrorStream(true)
                 .start()
             val finished = process.waitFor(5, TimeUnit.SECONDS)
@@ -83,12 +87,15 @@ object ClipboardUtil {
     }
 
     /**
-     * JXA that receives the GIF path as argv[0] and writes native pasteboard types.
-     * Using argv avoids path-escaping bugs in the generated script source.
+     * JXA that receives the GIF path as argv[0] and (optionally) a URL as argv[1].
+     * Using argv avoids escaping bugs in the generated script source.
+     *
+     * Writes two pasteboard items:
+     *   1. GIF bytes under `com.compuserve.gif` / `public.gif`
+     *   2. URL string under `public.utf8-plain-text` (fallback for text-only targets)
      *
      * Note: we intentionally avoid `public.file-url` here — Mac Catalyst apps
      * (including WhatsApp) have been observed to crash when that type is present.
-     * `NSFilenamesPboardType` + GIF UTI bytes is enough for media paste.
      */
     internal fun jxaSetClipboardToAnimatedGif(): String = """
         ObjC.import('AppKit');
@@ -96,26 +103,35 @@ object ClipboardUtil {
         function run(argv) {
           var path = argv[0];
           if (!path) { return 1; }
+          var url = argv[1];
           var data = $.NSData.dataWithContentsOfFile(path);
           if (data.isNil()) { return 2; }
 
-          var item = $.NSPasteboardItem.alloc.init;
-          item.setDataForType(data, 'com.compuserve.gif');
-          item.setDataForType(data, 'public.gif');
+          var gifItem = $.NSPasteboardItem.alloc.init;
+          gifItem.setDataForType(data, 'com.compuserve.gif');
+          gifItem.setDataForType(data, 'public.gif');
+
+          var items = $.NSMutableArray.alloc.init;
+          items.addObject(gifItem);
+          if (url) {
+            var urlItem = $.NSPasteboardItem.alloc.init;
+            urlItem.setStringForType(url, 'public.utf8-plain-text');
+            items.addObject(urlItem);
+          }
 
           var pb = $.NSPasteboard.generalPasteboard;
           pb.clearContents;
-          pb.writeObjects($.NSArray.arrayWithObject(item));
+          pb.writeObjects(items);
           // Legacy filename list helps some chat clients attach the file as media.
           pb.setPropertyListForType($.NSArray.arrayWithObject(path), 'NSFilenamesPboardType');
           return 0;
         }
     """.trimIndent()
 
-    private fun copyGifViaAwt(gifFile: File, gifBytes: ByteArray): Boolean {
+    private fun copyGifViaAwt(gifFile: File, gifBytes: ByteArray, url: String?): Boolean {
         return try {
             val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
-            clipboard.setContents(GifFileTransferable(gifFile, gifBytes), null)
+            clipboard.setContents(GifFileTransferable(gifFile, gifBytes, url), null)
             true
         } catch (_: Exception) {
             false
@@ -125,21 +141,29 @@ object ClipboardUtil {
 
 /**
  * AWT transferable used on non-macOS platforms (and as a macOS fallback).
- * Intentionally omits string/HTML URL flavors so chat apps paste the GIF file.
+ *
+ * Media flavors are advertised *first* so image-capable paste targets pick the GIF.
+ * A plain-text URL flavor is advertised last as a fallback so text-only targets
+ * (e.g. code editors) can still paste the Giphy link instead of getting nothing.
  */
 class GifFileTransferable(
     private val gifFile: File,
     private val gifBytes: ByteArray,
+    private val url: String? = null,
 ) : Transferable {
     private val gifInputStreamFlavor = DataFlavor("image/gif;class=java.io.InputStream", "Animated GIF")
     private val gifByteArrayFlavor = DataFlavor("image/gif;class=\"[B\"", "Animated GIF Bytes")
 
     override fun getTransferDataFlavors(): Array<DataFlavor> {
-        return arrayOf(
+        val flavors = mutableListOf(
             DataFlavor.javaFileListFlavor,
             gifInputStreamFlavor,
             gifByteArrayFlavor,
         )
+        if (!url.isNullOrEmpty()) {
+            flavors += DataFlavor.stringFlavor
+        }
+        return flavors.toTypedArray()
     }
 
     override fun isDataFlavorSupported(flavor: DataFlavor): Boolean {
@@ -157,6 +181,10 @@ class GifFileTransferable(
                 ByteArray::class.java -> gifBytes
                 else -> ByteArrayInputStream(gifBytes)
             }
+        }
+
+        if (flavor.equals(DataFlavor.stringFlavor) && !url.isNullOrEmpty()) {
+            return url
         }
 
         throw UnsupportedFlavorException(flavor)

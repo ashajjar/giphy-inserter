@@ -19,14 +19,14 @@ class GiphyTransferableTest {
     )
 
     @Test
-    fun testGifFileTransferableExposesMediaFlavorsWithoutUrlText() {
+    fun testGifFileTransferableExposesMediaFlavorsAndNoStringWhenUrlAbsent() {
         val tempFile = File.createTempFile("test", ".gif")
         tempFile.deleteOnExit()
         tempFile.writeBytes(minimalGifBytes)
 
         val transferable = GifFileTransferable(tempFile, minimalGifBytes)
 
-        // Chat apps paste links when stringFlavor is present — keep it absent.
+        // Without a URL, keep stringFlavor absent so chat apps do not paste as text.
         assertFalse(transferable.isDataFlavorSupported(DataFlavor.stringFlavor))
         assertTrue(transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
 
@@ -42,6 +42,25 @@ class GiphyTransferableTest {
     }
 
     @Test
+    fun testGifFileTransferableExposesStringFallbackWhenUrlProvided() {
+        val tempFile = File.createTempFile("test", ".gif")
+        tempFile.deleteOnExit()
+        tempFile.writeBytes(minimalGifBytes)
+
+        val url = "https://giphy.com/gifs/example-abc123"
+        val transferable = GifFileTransferable(tempFile, minimalGifBytes, url)
+
+        // Media flavors must still be advertised first so image-capable paste targets
+        // pick the GIF; text-only targets fall back to the URL string.
+        val flavors = transferable.transferDataFlavors
+        assertEquals(DataFlavor.javaFileListFlavor, flavors[0])
+        assertEquals(DataFlavor.stringFlavor, flavors.last())
+
+        assertTrue(transferable.isDataFlavorSupported(DataFlavor.stringFlavor))
+        assertEquals(url, transferable.getTransferData(DataFlavor.stringFlavor))
+    }
+
+    @Test
     fun testAppleScriptSetsClipboardToPosixFile() {
         // Build expectation from absolutePath so this passes on Windows CI and macOS/Linux.
         val file = File("example gif\"path.gif")
@@ -54,14 +73,16 @@ class GiphyTransferableTest {
     }
 
     @Test
-    fun testJxaScriptWritesGifUtisWithoutPlainTextOrFileUrl() {
+    fun testJxaScriptWritesGifUtisAndOptionalUrlFallback() {
         val script = ClipboardUtil.jxaSetClipboardToAnimatedGif()
         assertTrue(script.contains("com.compuserve.gif"))
         assertTrue(script.contains("public.gif"))
         assertTrue(script.contains("NSFilenamesPboardType"))
         assertTrue(script.contains("writeObjects"))
-        assertFalse(script.contains("public.utf8-plain-text"))
-        assertFalse(script.contains("NSPasteboardTypeString"))
+        // URL is written to a second pasteboard item so text-only targets can paste
+        // the link when image data isn't accepted.
+        assertTrue(script.contains("public.utf8-plain-text"))
+        assertTrue(script.contains("argv[1]"))
         // Catalyst apps (WhatsApp) can crash when public.file-url is on the pasteboard.
         assertFalse(script.contains("public.file-url"))
     }
