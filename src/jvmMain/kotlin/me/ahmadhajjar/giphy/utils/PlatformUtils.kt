@@ -9,6 +9,9 @@ object PlatformUtils {
 
     val shortcutModifierLabel: String = if (isMac) "Cmd" else "Ctrl"
 
+    /** Compact modifier symbol suitable for inline hints (e.g. `⌘C` or `Ctrl+C`). */
+    val shortcutModifierSymbol: String = if (isMac) "⌘" else "Ctrl+"
+
     fun isShortcutPressed(event: KeyEvent): Boolean {
         return if (isMac) event.isMetaPressed else event.isCtrlPressed
     }

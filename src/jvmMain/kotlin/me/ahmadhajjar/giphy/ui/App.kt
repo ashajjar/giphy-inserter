@@ -240,8 +240,9 @@ fun WindowScope.App(onExit: () -> Unit) {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    val mod = PlatformUtils.shortcutModifierSymbol
                     Text(
-                        "⏎ Next  •  ⌘C Copy  •  ⌘R Random",
+                        "⏎ Next  •  ${mod}C Copy  •  ${mod}R Random",
                         style = MaterialTheme.typography.overline,
                         color = Color.White.copy(alpha = 0.3f),
                         modifier = Modifier.padding(bottom = 12.dp)

@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "me.ahmadhajjar.giphy"
-version = "1.2.0"
+version = "1.3.0"
 
 repositories {
     google()
@@ -44,16 +44,16 @@ compose.desktop {
         nativeDistributions {
             includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Giphy Inserter"
-            packageVersion = "1.2.0"
-            version = "1.2.0"
+            packageName = "giphy-inserter"
+            packageVersion = "1.3.0"
+            version = "1.3.0"
             description = "Helps you search and navigate giphy searches and copy giphies"
             vendor = "Ahmad Hajjar"
             macOS {
                 // macOS specific options
                 iconFile.set(resourcesRoot.resolve("icons/icon-big.icns"))
                 bundleID = "me.ahmadhajjar.giphy"
-                packageName = "Giphy Inserter"
+                packageName = "giphy-inserter"
                 dockName = "Giphy Inserter"
             }
             windows {
